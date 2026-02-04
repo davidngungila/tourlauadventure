@@ -507,11 +507,35 @@ class CloudinaryController extends Controller
     /**
      * Generate Cloudinary API signature
      */
-    protected function generateSignature(array $params, int $timestamp, string $apiSecret): string
+    protected function generateSignature(array $params, int $timestamp, string $apiSecret = null): string
     {
-        $params['timestamp'] = $timestamp;
-        ksort($params);
-        $signatureString = http_build_query($params);
+        if ($apiSecret === null) {
+            // Fallback for old code that doesn't pass apiSecret
+            $account = $this->getAccount();
+            $credentials = $this->getCredentials($account);
+            $apiSecret = $credentials['api_secret'] ?? '';
+        }
+        
+        // Remove signature and api_key from params for signature generation
+        $signParams = $params;
+        unset($signParams['signature'], $signParams['api_key']);
+        
+        // Ensure timestamp is included
+        $signParams['timestamp'] = $timestamp;
+        
+        // Sort parameters alphabetically
+        ksort($signParams);
+        
+        // Build query string (without url encoding for signature)
+        $signatureString = '';
+        foreach ($signParams as $key => $value) {
+            if ($signatureString !== '') {
+                $signatureString .= '&';
+            }
+            $signatureString .= $key . '=' . $value;
+        }
+        
+        // Generate SHA1 signature
         return sha1($signatureString . $apiSecret);
     }
 }
