@@ -2,10 +2,10 @@
 use App\Models\OrganizationSetting;
 
 $orgSettings = OrganizationSetting::getSettings();
-$systemName = config('app.name', 'Lau Paradise Adventures');
+$systemName = config('app.name', 'TourPilot');
 
 if ($systemName === 'Laravel' || empty($systemName)) {
-    $systemName = 'Lau Paradise Adventures';
+    $systemName = 'TourPilot';
 }
 
 // Ensure timezone is a string, not an array

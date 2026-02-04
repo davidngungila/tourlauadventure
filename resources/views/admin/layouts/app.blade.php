@@ -11,7 +11,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') - {{ config('app.name', 'Tour Admin') }}</title>
+    <title>@yield('title', 'Dashboard') - {{ config('app.name', 'TourPilot') }}</title>
     <meta name="description" content="@yield('description', 'Tour Management System')" />
     
     <!-- Favicon -->
@@ -168,7 +168,7 @@
 
                 </span>
               </span>
-              <span class="app-brand-text demo menu-text fw-semibold ms-2">{{ config('app.name', 'Tour Admin') }}</span>
+              <span class="app-brand-text demo menu-text fw-semibold ms-2">{{ config('app.name', 'TourPilot') }}</span>
             </a>
             <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
               <i class="menu-toggle-icon d-xl-block align-middle"></i>

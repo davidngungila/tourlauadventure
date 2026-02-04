@@ -47,7 +47,7 @@ class PasswordResetMail extends Mailable
     {
         return new Envelope(
             from: config('mail.from.address', 'lauparadiseadventure@gmail.com'),
-            subject: 'Your Password Has Been Reset - ' . config('app.name', 'Lau Paradise Adventures'),
+            subject: 'Your Password Has Been Reset - ' . config('app.name', 'TourPilot'),
         );
     }
 

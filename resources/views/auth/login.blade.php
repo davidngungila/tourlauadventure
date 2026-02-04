@@ -6,10 +6,10 @@
     <meta name="robots" content="noindex, nofollow" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     
-    <title>Login - {{ config('app.name', 'Tour Admin') }}</title>
+    <title>Login - {{ config('app.name', 'TourPilot') }}</title>
     
     <!-- Canonical SEO -->
-    <meta name="description" content="{{ config('app.name', 'Tour Admin') }} - Login to your account" />
+    <meta name="description" content="{{ config('app.name', 'TourPilot') }} - Login to your account" />
     <meta name="keywords" content="login, authentication, tour admin" />
     
     <!-- Favicon -->
@@ -174,7 +174,7 @@
         <div class="splash-logo">
           <img src="{{ asset('lau-adventuress.png') }}" alt="Lau Paradise Adventures" style="width: 100%; height: 100%; object-fit: contain;" />
             </div>
-        <h3 class="splash-title">{{ config('app.name', 'Tour Admin') }}</h3>
+        <h3 class="splash-title">{{ config('app.name', 'TourPilot') }}</h3>
         <p class="splash-subtitle">Signing you in...</p>
         <div class="progress-container">
           <div class="progress-bar" id="loginProgressBar"></div>

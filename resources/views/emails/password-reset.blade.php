@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Reset - {{ config('app.name', 'Lau Paradise Adventures') }}</title>
+    <title>Password Reset - {{ config('app.name', 'TourPilot') }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -91,7 +91,7 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>{{ config('app.name', 'Lau Paradise Adventures') }}</h1>
+            <h1>{{ config('app.name', 'TourPilot') }}</h1>
             <p style="margin: 10px 0 0 0; opacity: 0.9;">Password Reset Notification</p>
         </div>
         
@@ -133,7 +133,7 @@
         </div>
         
         <div class="footer">
-            <p><strong>{{ config('app.name', 'Lau Paradise Adventures') }}</strong></p>
+            <p><strong>{{ config('app.name', 'TourPilot') }}</strong></p>
             <p>Tanzania's premier tour operator</p>
             <p style="margin-top: 15px;">
                 <a href="mailto:lauparadiseadventure@gmail.com" style="color: #1a4d3e;">lauparadiseadventure@gmail.com</a> | 

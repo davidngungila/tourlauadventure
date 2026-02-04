@@ -11,7 +11,7 @@
         }
         
         $generatedAt = \Carbon\Carbon::now()->setTimezone($timezone)->format('d M Y, H:i:s');
-        $systemName = config('app.name', 'Lau Paradise Adventures');
+        $systemName = config('app.name', 'TourPilot');
         $mainColor = array(0.24, 0.65, 0.45); // #3ea572 in RGB (0-1 scale)
         
         $size = 8;

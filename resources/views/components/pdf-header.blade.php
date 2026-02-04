@@ -3,11 +3,11 @@ use App\Models\OrganizationSetting;
 use Illuminate\Support\Facades\Storage;
 
 $orgSettings = OrganizationSetting::getSettings();
-$systemName = config('app.name', 'Lau Paradise Adventures');
+$systemName = config('app.name', 'TourPilot');
 
 // Get organization info - ensure all values are strings, not arrays
 $companyName = is_array($orgSettings->organization_name ?? null) 
-    ? config('app.name', 'Company Name') 
+    ? config('app.name', 'TourPilot') 
     : (string)($orgSettings->organization_name ?? config('app.name', 'Company Name'));
 
 $companyAddress = is_array($orgSettings->address ?? null) ? '' : (string)($orgSettings->address ?? '');
