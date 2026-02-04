@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('notification_providers', function (Blueprint $table) {
-            $table->string('sms_bearer_token')->nullable()->after('sms_password');
-        });
+        if (!Schema::hasColumn('notification_providers', 'sms_bearer_token')) {
+            Schema::table('notification_providers', function (Blueprint $table) {
+                $table->string('sms_bearer_token')->nullable()->after('sms_password');
+            });
+        }
     }
 
     /**
