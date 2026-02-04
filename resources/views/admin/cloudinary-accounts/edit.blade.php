@@ -91,8 +91,9 @@
 
                             <div class="col-md-6">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="is_active" id="is_active" 
+                                    <input class="form-check-input" type="checkbox" name="is_active" id="is_active" value="1"
                                            {{ old('is_active', $account->is_active) ? 'checked' : '' }}>
+                                    <input type="hidden" name="is_active" value="0">
                                     <label class="form-check-label" for="is_active">
                                         Active
                                     </label>
@@ -101,8 +102,9 @@
 
                             <div class="col-md-6">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="is_default" id="is_default" 
+                                    <input class="form-check-input" type="checkbox" name="is_default" id="is_default" value="1"
                                            {{ old('is_default', $account->is_default) ? 'checked' : '' }}>
+                                    <input type="hidden" name="is_default" value="0">
                                     <label class="form-check-label" for="is_default">
                                         Set as Default
                                     </label>

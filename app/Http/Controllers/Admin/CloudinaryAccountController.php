@@ -62,8 +62,9 @@ class CloudinaryAccountController extends Controller
             }
 
             $validated['created_by'] = auth()->id();
-            $validated['is_active'] = $request->has('is_active') ? true : false;
-            $validated['is_default'] = $request->has('is_default') ? true : false;
+            // Convert checkbox values to boolean (they come as "0" or "1" strings)
+            $validated['is_active'] = isset($validated['is_active']) && $validated['is_active'] == '1';
+            $validated['is_default'] = isset($validated['is_default']) && $validated['is_default'] == '1';
 
             // Remove any fields that don't exist in fillable or table
             $fillable = (new CloudinaryAccount())->getFillable();
@@ -202,8 +203,9 @@ class CloudinaryAccountController extends Controller
                 CloudinaryAccount::where('id', '!=', $id)->where('is_default', true)->update(['is_default' => false]);
             }
 
-            $validated['is_active'] = $request->has('is_active') ? true : false;
-            $validated['is_default'] = $request->has('is_default') ? true : false;
+            // Convert checkbox values to boolean (they come as "0" or "1" strings)
+            $validated['is_active'] = isset($validated['is_active']) && $validated['is_active'] == '1';
+            $validated['is_default'] = isset($validated['is_default']) && $validated['is_default'] == '1';
 
             // Remove any fields that don't exist in fillable
             $fillable = (new CloudinaryAccount())->getFillable();
