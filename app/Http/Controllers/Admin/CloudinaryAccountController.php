@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\CloudinaryAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
 class CloudinaryAccountController extends Controller
 {
@@ -36,6 +38,11 @@ class CloudinaryAccountController extends Controller
     public function store(Request $request)
     {
         try {
+            // Check if table exists
+            if (!\Illuminate\Support\Facades\Schema::hasTable('cloudinary_accounts')) {
+                throw new \Exception('cloudinary_accounts table does not exist. Please run migrations: php artisan migrate');
+            }
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'cloud_name' => 'required|string|max:255',
@@ -55,12 +62,37 @@ class CloudinaryAccountController extends Controller
             }
 
             $validated['created_by'] = auth()->id();
-            $validated['is_active'] = $request->has('is_active');
-            $validated['is_default'] = $request->has('is_default');
+            $validated['is_active'] = $request->has('is_active') ? true : false;
+            $validated['is_default'] = $request->has('is_default') ? true : false;
 
-            $account = CloudinaryAccount::create($validated);
+            // Remove any fields that don't exist in fillable or table
+            $fillable = (new CloudinaryAccount())->getFillable();
+            $validated = array_intersect_key($validated, array_flip($fillable));
+
+            // Remove null values for optional fields to use defaults
+            if (empty($validated['cloudinary_url'])) {
+                unset($validated['cloudinary_url']);
+            }
+            if (empty($validated['description'])) {
+                unset($validated['description']);
+            }
+
+            Log::info('Creating Cloudinary account', ['data' => array_merge($validated, ['api_secret' => '***hidden***'])]);
+
+            try {
+                $account = CloudinaryAccount::create($validated);
+            } catch (\Illuminate\Database\QueryException $e) {
+                Log::error('Database error creating Cloudinary account', [
+                    'error' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'sql' => $e->getSql() ?? 'N/A'
+                ]);
+                throw new \Exception('Database error: ' . $e->getMessage() . '. Please check if the cloudinary_accounts table exists and migrations are up to date.');
+            }
 
             DB::commit();
+
+            \Log::info('Cloudinary account created successfully', ['account_id' => $account->id]);
 
             // Test connection automatically (don't fail if test fails)
             $testResult = ['success' => false, 'message' => 'Connection test skipped'];
@@ -160,10 +192,34 @@ class CloudinaryAccountController extends Controller
                 CloudinaryAccount::where('id', '!=', $id)->where('is_default', true)->update(['is_default' => false]);
             }
 
-            $validated['is_active'] = $request->has('is_active');
-            $validated['is_default'] = $request->has('is_default');
+            $validated['is_active'] = $request->has('is_active') ? true : false;
+            $validated['is_default'] = $request->has('is_default') ? true : false;
 
-            $account->update($validated);
+            // Remove any fields that don't exist in fillable
+            $fillable = (new CloudinaryAccount())->getFillable();
+            $validated = array_intersect_key($validated, array_flip($fillable));
+
+            // Remove null values for optional fields
+            if (empty($validated['cloudinary_url'])) {
+                $validated['cloudinary_url'] = null;
+            }
+            if (empty($validated['description'])) {
+                $validated['description'] = null;
+            }
+
+            Log::info('Updating Cloudinary account', ['account_id' => $id, 'data' => array_merge($validated, ['api_secret' => '***hidden***'])]);
+
+            try {
+                $account->update($validated);
+            } catch (\Illuminate\Database\QueryException $e) {
+                Log::error('Database error updating Cloudinary account', [
+                    'account_id' => $id,
+                    'error' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'sql' => $e->getSql() ?? 'N/A'
+                ]);
+                throw new \Exception('Database error: ' . $e->getMessage());
+            }
 
             DB::commit();
 
