@@ -22,7 +22,10 @@
                     <div class="d-flex align-items-start align-items-sm-center gap-4">
                         <div class="avatar-wrapper">
                             @if($user->avatar)
-                                <img src="{{ asset('storage/' . $user->avatar) }}" alt="user-avatar" class="d-block rounded" id="uploadedAvatar" style="width: 120px; height: 120px; object-fit: cover;" />
+                                <img src="{{ $user->avatar_url }}" alt="user-avatar" class="d-block rounded" id="uploadedAvatar" style="width: 120px; height: 120px; object-fit: cover; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                <div class="avatar-initial bg-label-primary d-flex align-items-center justify-content-center rounded" id="uploadedAvatarFallback" style="width: 120px; height: 120px; font-size: 3rem; font-weight: 600; display: none;">
+                                    {{ $user->initials }}
+                                </div>
                             @else
                                 <div class="avatar-initial bg-label-primary d-flex align-items-center justify-content-center rounded" id="uploadedAvatar" style="width: 120px; height: 120px; font-size: 3rem; font-weight: 600;">
                                     {{ $user->initials }}

@@ -41,7 +41,10 @@
             <div class="card-body">
                 <div class="d-flex align-items-start align-items-sm-center gap-6">
                     @if($user->avatar)
-                        <img src="{{ asset('storage/' . $user->avatar) }}" alt="user-avatar" class="d-block w-px-100 h-px-100 rounded" id="uploadedAvatar" />
+                        <img src="{{ $user->avatar_url }}" alt="user-avatar" class="d-block w-px-100 h-px-100 rounded" id="uploadedAvatar" style="width: 100px; height: 100px; object-fit: cover; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="avatar-initials d-block w-px-100 h-px-100 rounded d-flex align-items-center justify-content-center" id="uploadedAvatarFallback" style="width: 100px; height: 100px; font-size: 2.5rem; background-color: var(--bs-primary); color: white; display: none;">
+                            {{ $user->initials }}
+                        </div>
                     @else
                         <div class="avatar-initials d-block w-px-100 h-px-100 rounded d-flex align-items-center justify-content-center" id="uploadedAvatar" style="width: 100px; height: 100px; font-size: 2.5rem; background-color: var(--bs-primary); color: white;">
                             {{ $user->initials }}
