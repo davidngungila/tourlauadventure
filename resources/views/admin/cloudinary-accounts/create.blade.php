@@ -21,6 +21,34 @@
         </div>
     </div>
 
+    <!-- Error Messages -->
+    @if($errors->any())
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h6 class="alert-heading"><i class="ri-error-warning-line me-2"></i>Please fix the following errors:</h6>
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="ri-error-warning-line me-2"></i>{{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Form -->
     <div class="row">
         <div class="col-12">
@@ -152,9 +180,20 @@ function togglePassword(inputId) {
 }
 
 document.getElementById('cloudinaryAccountForm').addEventListener('submit', function(e) {
-    const btn = this.querySelector('button[type="submit"]');
+    const form = this;
+    const btn = form.querySelector('button[type="submit"]');
+    const originalHtml = btn.innerHTML;
+    
+    // Clear previous errors
+    form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+    document.querySelectorAll('.alert-danger').forEach(el => el.remove());
+    
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+    
+    // Allow form to submit normally - Laravel will handle validation
+    // If there's an error, the page will reload with errors displayed
 });
 </script>
 @endpush

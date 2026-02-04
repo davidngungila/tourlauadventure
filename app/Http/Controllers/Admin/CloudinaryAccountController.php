@@ -142,9 +142,19 @@ class CloudinaryAccountController extends Controller
                 ], 500);
             }
 
+            $errorMessage = 'Failed to save account: ' . $e->getMessage();
+            
+            // If it's a database error, provide more helpful message
+            if (strpos($e->getMessage(), 'Table') !== false || strpos($e->getMessage(), 'doesn\'t exist') !== false) {
+                $errorMessage = 'Database table not found. Please run: php artisan migrate';
+            } elseif (strpos($e->getMessage(), 'SQLSTATE') !== false) {
+                $errorMessage = 'Database error occurred. Please check your database connection and table structure.';
+            }
+            
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to save account: ' . $e->getMessage()]);
+                ->withErrors(['error' => $errorMessage])
+                ->with('error', $errorMessage);
         }
     }
 
