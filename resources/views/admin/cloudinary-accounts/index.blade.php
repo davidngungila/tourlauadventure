@@ -14,9 +14,14 @@
                     </h4>
                     <p class="text-muted mb-0">Manage multiple Cloudinary accounts and test connections</p>
                 </div>
-                <a href="{{ route('admin.cloudinary-accounts.create') }}" class="btn btn-primary">
-                    <i class="ri-add-line me-1"></i>Add Account
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('admin.cloudinary.index') }}" class="btn btn-outline-primary">
+                        <i class="ri-image-line me-1"></i>Manage Media
+                    </a>
+                    <a href="{{ route('admin.cloudinary-accounts.create') }}" class="btn btn-primary">
+                        <i class="ri-add-line me-1"></i>Add Account
+                    </a>
+                </div>
             </div>
         </div>
     </div>
