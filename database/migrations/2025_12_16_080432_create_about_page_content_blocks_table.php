@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('about_page_content_blocks')) {
+            return;
+        }
+        
         Schema::create('about_page_content_blocks', function (Blueprint $table) {
             $table->id();
             $table->string('block_type'); // culture, sustainability, partnerships, location, social_responsibility, etc.
