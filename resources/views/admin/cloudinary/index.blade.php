@@ -185,21 +185,48 @@ function loadCloudinaryImages() {
     fetch('{{ route("admin.cloudinary.assets") }}?' + params, {
         headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) {
+            throw new Error(`HTTP error! status: ${r.status}`);
+        }
+        return r.json();
+    })
     .then(data => {
         grid.innerHTML = '';
+        if (data.success === false) {
+            grid.innerHTML = `<div class="col-12 text-center py-5">
+                <div class="alert alert-danger">
+                    <i class="ri-error-warning-line me-2"></i>
+                    <strong>Error:</strong> ${data.message || 'Failed to load images'}
+                    ${data.error ? '<br><small>' + data.error + '</small>' : ''}
+                </div>
+                <p class="text-muted mt-3">Please check:</p>
+                <ul class="text-start text-muted">
+                    <li>Cloudinary account is configured correctly</li>
+                    <li>Account credentials are valid</li>
+                    <li>You have at least one active Cloudinary account</li>
+                </ul>
+                <a href="{{ route('admin.cloudinary-accounts.index') }}" class="btn btn-primary mt-3">
+                    <i class="ri-settings-3-line me-1"></i>Manage Accounts
+                </a>
+            </div>`;
+            return;
+        }
         if (data.resources && data.resources.length > 0) {
             data.resources.forEach(asset => {
                 const col = document.createElement('div');
                 col.className = 'col-md-3 col-sm-4 col-6';
+                const imageUrl = asset.url || asset.secure_url || '';
+                const isImage = asset.format && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(asset.format.toLowerCase());
+                
                 col.innerHTML = `
                     <div class="card h-100">
                         <div class="card-body p-2">
                             <div class="position-relative">
                                 <input type="checkbox" class="form-check-input position-absolute top-0 start-0 m-2" 
                                        value="${asset.public_id}" onchange="toggleSelection('${asset.public_id}', this.checked)">
-                                ${asset.resource_type === 'image' ? 
-                                    `<img src="${asset.secure_url}" class="img-fluid rounded" style="width:100%;height:150px;object-fit:cover;" alt="${asset.public_id}">` :
+                                ${isImage && imageUrl ? 
+                                    `<img src="${imageUrl}" class="img-fluid rounded" style="width:100%;height:150px;object-fit:cover;" alt="${asset.public_id}" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'bg-light rounded d-flex align-items-center justify-content-center\\' style=\\'height:150px;\\'><i class=\\'ri-file-line ri-48px text-muted\\'></i></div>';">` :
                                     `<div class="bg-light rounded d-flex align-items-center justify-content-center" style="height:150px;">
                                         <i class="ri-file-line ri-48px text-muted"></i>
                                     </div>`
@@ -210,9 +237,9 @@ function loadCloudinaryImages() {
                                     ${asset.public_id}
                                 </small>
                                 <div class="d-flex gap-1 mt-2">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="importToGallery('${asset.public_id}', '${asset.secure_url}')" title="Import to Gallery">
+                                    ${isImage && imageUrl ? `<button class="btn btn-sm btn-outline-primary" onclick="importToGallery('${asset.public_id}', '${imageUrl}')" title="Import to Gallery">
                                         <i class="ri-download-line"></i>
-                                    </button>
+                                    </button>` : ''}
                                     <button class="btn btn-sm btn-outline-danger" onclick="deleteImage('${asset.public_id}')" title="Delete">
                                         <i class="ri-delete-bin-line"></i>
                                     </button>
@@ -228,7 +255,17 @@ function loadCloudinaryImages() {
         }
     })
     .catch(err => {
-        grid.innerHTML = '<div class="col-12 text-center py-5"><div class="alert alert-danger">Error loading media: ' + err.message + '</div></div>';
+        console.error('Error loading Cloudinary images:', err);
+        grid.innerHTML = `<div class="col-12 text-center py-5">
+            <div class="alert alert-danger">
+                <i class="ri-error-warning-line me-2"></i>
+                <strong>Error loading media:</strong> ${err.message || 'Unknown error'}
+            </div>
+            <p class="text-muted mt-3">Please check your browser console for more details.</p>
+            <a href="{{ route('admin.cloudinary-accounts.index') }}" class="btn btn-primary mt-3">
+                <i class="ri-settings-3-line me-1"></i>Check Cloudinary Accounts
+            </a>
+        </div>`;
     });
 }
 

@@ -116,12 +116,14 @@ class CloudinaryController extends Controller
                         'public_id' => $resource['public_id'],
                         'filename' => basename($resource['public_id']),
                         'url' => $resource['secure_url'] ?? $resource['url'] ?? '',
+                        'secure_url' => $resource['secure_url'] ?? $resource['url'] ?? '', // Keep for backward compatibility
                         'width' => $resource['width'] ?? null,
                         'height' => $resource['height'] ?? null,
                         'format' => $resource['format'] ?? null,
                         'bytes' => $resource['bytes'] ?? 0,
                         'folder' => $resource['folder'] ?? '',
                         'created_at' => $resource['created_at'] ?? null,
+                        'resource_type' => $resource['resource_type'] ?? 'image',
                     ];
                 });
 
