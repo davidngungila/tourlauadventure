@@ -84,8 +84,9 @@ class CloudinaryController extends Controller
                 ], 400);
             }
 
+            $resourceType = $request->get('resource_type', 'image');
+            
             $params = [
-                'resource_type' => 'image',
                 'max_results' => $request->get('max_results', 500),
                 'type' => 'upload',
             ];
@@ -100,13 +101,21 @@ class CloudinaryController extends Controller
 
             // Generate signature for authentication
             $timestamp = time();
+            $params['timestamp'] = $timestamp;
             $signature = $this->generateSignature($params, $timestamp, $credentials['api_secret']);
+            $params['signature'] = $signature;
+            $params['api_key'] = $credentials['api_key'];
 
-            $response = Http::withBasicAuth($credentials['api_key'], $credentials['api_secret'])
-                ->get("{$credentials['base_url']}/resources/image/upload", array_merge($params, [
-                    'timestamp' => $timestamp,
-                    'signature' => $signature,
-                ]));
+            // Use the correct API endpoint based on resource type
+            $endpoint = "{$credentials['base_url']}/resources/{$resourceType}/upload";
+            
+            Log::info('Cloudinary getAssets request', [
+                'endpoint' => $endpoint,
+                'params' => array_merge($params, ['api_secret' => '***hidden***']),
+                'account_id' => $account?->id,
+            ]);
+
+            $response = Http::get($endpoint, $params);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -137,10 +146,30 @@ class CloudinaryController extends Controller
                 ]);
             }
 
+            // Get detailed error information
+            $errorBody = $response->body();
+            $errorJson = $response->json();
+            $errorMessage = 'Failed to fetch assets from Cloudinary';
+            
+            if (isset($errorJson['error']['message'])) {
+                $errorMessage = $errorJson['error']['message'];
+            } elseif (is_string($errorBody)) {
+                $errorMessage = $errorBody;
+            }
+
+            Log::error('Cloudinary getAssets API error', [
+                'status' => $response->status(),
+                'error' => $errorMessage,
+                'response' => $errorBody,
+                'account_id' => $account?->id,
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch assets from Cloudinary',
-                'error' => $response->body()
+                'message' => $errorMessage,
+                'error' => $errorBody,
+                'status' => $response->status(),
+                'account_id' => $account?->id,
             ], $response->status());
 
         } catch (\Exception $e) {
@@ -170,14 +199,22 @@ class CloudinaryController extends Controller
             }
 
             $timestamp = time();
-            $params = ['timestamp' => $timestamp];
+            $params = [
+                'timestamp' => $timestamp,
+            ];
             $signature = $this->generateSignature($params, $timestamp, $credentials['api_secret']);
+            $params['signature'] = $signature;
+            $params['api_key'] = $credentials['api_key'];
 
-            $response = Http::withBasicAuth($credentials['api_key'], $credentials['api_secret'])
-                ->get("{$credentials['base_url']}/folders", [
-                    'timestamp' => $timestamp,
-                    'signature' => $signature,
-                ]);
+            $endpoint = "{$credentials['base_url']}/folders";
+            
+            Log::info('Cloudinary getFolders request', [
+                'endpoint' => $endpoint,
+                'params' => array_merge($params, ['api_secret' => '***hidden***']),
+                'account_id' => $account?->id,
+            ]);
+
+            $response = Http::get($endpoint, $params);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -194,9 +231,29 @@ class CloudinaryController extends Controller
                 ]);
             }
 
+            // Get detailed error information
+            $errorBody = $response->body();
+            $errorJson = $response->json();
+            $errorMessage = 'Failed to fetch folders from Cloudinary';
+            
+            if (isset($errorJson['error']['message'])) {
+                $errorMessage = $errorJson['error']['message'];
+            } elseif (is_string($errorBody)) {
+                $errorMessage = $errorBody;
+            }
+
+            Log::error('Cloudinary getFolders API error', [
+                'status' => $response->status(),
+                'error' => $errorMessage,
+                'response' => $errorBody,
+                'account_id' => $account?->id,
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch folders',
+                'message' => $errorMessage,
+                'error' => $errorBody,
+                'status' => $response->status(),
             ], $response->status());
 
         } catch (\Exception $e) {
