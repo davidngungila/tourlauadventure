@@ -997,6 +997,13 @@ class DashboardController extends BaseAdminController
         }
         
         $path = $request->file('avatar')->store('avatars', 'public');
+        
+        // Set proper permissions for the uploaded file
+        $fullPath = storage_path('app/public/' . $path);
+        if (file_exists($fullPath)) {
+            chmod($fullPath, 0644);
+        }
+        
         $user->update(['avatar' => $path]);
         
         // Handle AJAX requests
