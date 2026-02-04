@@ -390,69 +390,91 @@
 </li>
 @endif
 
-{{-- 🟪 HOMEPAGE SECTIONS --}}
+{{-- 🟪 WEBSITE CONTENT MANAGEMENT --}}
 @if($user->hasAnyRole(['System Administrator', 'Content Manager']))
-<li class="menu-item {{ request()->routeIs('admin.homepage.*') ? 'active open' : '' }}">
+<li class="menu-item {{ request()->routeIs('admin.homepage.*') || request()->routeIs('admin.about-page.*') || request()->routeIs('admin.contact-page.*') || request()->routeIs('admin.cloudinary.*') || request()->routeIs('admin.cloudinary-accounts.*') ? 'active open' : '' }}">
     <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri-home-line"></i>
-        <div data-i18n="Homepage Sections">Homepage Sections</div>
+        <i class="menu-icon tf-icons ri-global-line"></i>
+        <div data-i18n="Website Content">Website Content</div>
     </a>
     <ul class="menu-sub">
+        {{-- Homepage Sections --}}
         <li class="menu-item {{ request()->routeIs('admin.homepage.destinations') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.destinations') }}" class="menu-link">
+                <i class="ri-map-pin-line me-2"></i>
                 <div data-i18n="Destinations">Destinations</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.hero-slider*') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.hero-slider') }}" class="menu-link">
+                <i class="ri-slideshow-line me-2"></i>
                 <div data-i18n="Hero Slider">Hero Slider</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.gallery') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.gallery') }}" class="menu-link">
+                <i class="ri-image-line me-2"></i>
                 <div data-i18n="Gallery">Gallery</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.testimonials') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.testimonials') }}" class="menu-link">
+                <i class="ri-star-line me-2"></i>
                 <div data-i18n="Testimonials">Testimonials</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.blog-posts') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.blog-posts') }}" class="menu-link">
+                <i class="ri-article-line me-2"></i>
                 <div data-i18n="Blog Posts">Blog Posts</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.faq') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.faq') }}" class="menu-link">
+                <i class="ri-question-line me-2"></i>
                 <div data-i18n="FAQ">FAQ</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.policies') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.policies') }}" class="menu-link">
+                <i class="ri-file-text-line me-2"></i>
                 <div data-i18n="Company Policies">Company Policies</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.seo') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.seo') }}" class="menu-link">
+                <i class="ri-search-line me-2"></i>
                 <div data-i18n="SEO Management">SEO Management</div>
             </a>
         </li>
-    </ul>
-</li>
-@endif
-
-{{-- 🟪 ABOUT PAGE MANAGEMENT --}}
-@if($user->hasAnyRole(['System Administrator', 'Content Manager']))
-<li class="menu-item {{ request()->routeIs('admin.about-page.*') ? 'active open' : '' }}">
-    <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri-information-line"></i>
-        <div data-i18n="About Page">About Page</div>
-    </a>
-    <ul class="menu-sub">
-        <li class="menu-item {{ request()->routeIs('admin.about-page.index') ? 'active' : '' }}">
+        
+        {{-- Page Management --}}
+        <li class="menu-divider"></li>
+        <li class="menu-item {{ request()->routeIs('admin.about-page.*') ? 'active' : '' }}">
             <a href="{{ route('admin.about-page.index') }}" class="menu-link">
-                <div data-i18n="Manage About Page">Manage About Page</div>
+                <i class="ri-information-line me-2"></i>
+                <div data-i18n="About Page">About Page</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.contact-page.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.contact-page.index') }}" class="menu-link">
+                <i class="ri-mail-line me-2"></i>
+                <div data-i18n="Contact Page">Contact Page</div>
+            </a>
+        </li>
+        
+        {{-- Media Management --}}
+        <li class="menu-divider"></li>
+        <li class="menu-item {{ request()->routeIs('admin.cloudinary.index') ? 'active' : '' }}">
+            <a href="{{ route('admin.cloudinary.index') }}" class="menu-link">
+                <i class="ri-cloud-line me-2"></i>
+                <div data-i18n="Cloudinary Media">Cloudinary Media</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.cloudinary-accounts.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.cloudinary-accounts.index') }}" class="menu-link">
+                <i class="ri-cloud-settings-line me-2"></i>
+                <div data-i18n="Cloudinary Accounts">Cloudinary Accounts</div>
             </a>
         </li>
     </ul>
