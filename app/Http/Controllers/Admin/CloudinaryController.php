@@ -9,29 +9,54 @@ use Illuminate\Support\Facades\Log;
 
 class CloudinaryController extends Controller
 {
-    protected $cloudName;
-    protected $apiKey;
-    protected $apiSecret;
-    protected $baseUrl;
-
-    public function __construct()
+    protected function getAccount($accountId = null)
     {
+        if ($accountId) {
+            $account = \App\Models\CloudinaryAccount::find($accountId);
+            if ($account && $account->is_active) {
+                return $account;
+            }
+        }
+
+        // Get default account
+        return \App\Models\CloudinaryAccount::getDefault();
+    }
+
+    protected function getCredentials($account = null)
+    {
+        if (!$account) {
+            $account = $this->getAccount();
+        }
+
+        if ($account) {
+            return [
+                'cloud_name' => $account->cloud_name,
+                'api_key' => $account->api_key,
+                'api_secret' => $account->api_secret,
+                'base_url' => "https://api.cloudinary.com/v1_1/{$account->cloud_name}",
+            ];
+        }
+
+        // Fallback to env variables
         $cloudinaryUrl = env('CLOUDINARY_URL');
         
         if ($cloudinaryUrl) {
-            // Parse CLOUDINARY_URL: cloudinary://api_key:api_secret@cloud_name
             $parsed = parse_url($cloudinaryUrl);
-            $this->cloudName = $parsed['host'] ?? null;
-            $this->apiKey = $parsed['user'] ?? null;
-            $this->apiSecret = $parsed['pass'] ?? null;
+            $cloudName = $parsed['host'] ?? null;
+            $apiKey = $parsed['user'] ?? null;
+            $apiSecret = $parsed['pass'] ?? null;
         } else {
-            // Fallback to individual env variables
-            $this->cloudName = env('CLOUDINARY_CLOUD_NAME');
-            $this->apiKey = env('CLOUDINARY_API_KEY');
-            $this->apiSecret = env('CLOUDINARY_API_SECRET');
+            $cloudName = env('CLOUDINARY_CLOUD_NAME');
+            $apiKey = env('CLOUDINARY_API_KEY');
+            $apiSecret = env('CLOUDINARY_API_SECRET');
         }
-        
-        $this->baseUrl = "https://api.cloudinary.com/v1_1/{$this->cloudName}";
+
+        return [
+            'cloud_name' => $cloudName,
+            'api_key' => $apiKey,
+            'api_secret' => $apiSecret,
+            'base_url' => $cloudName ? "https://api.cloudinary.com/v1_1/{$cloudName}" : null,
+        ];
     }
 
     /**
@@ -48,10 +73,14 @@ class CloudinaryController extends Controller
     public function getAssets(Request $request)
     {
         try {
-            if (!$this->cloudName || !$this->apiKey || !$this->apiSecret) {
+            $accountId = $request->get('account_id');
+            $account = $this->getAccount($accountId);
+            $credentials = $this->getCredentials($account);
+
+            if (!$credentials['cloud_name'] || !$credentials['api_key'] || !$credentials['api_secret']) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Cloudinary credentials not configured. Please set CLOUDINARY_URL in .env'
+                    'message' => 'Cloudinary credentials not configured. Please add an account in Cloudinary Accounts settings.'
                 ], 400);
             }
 
@@ -71,10 +100,10 @@ class CloudinaryController extends Controller
 
             // Generate signature for authentication
             $timestamp = time();
-            $signature = $this->generateSignature($params, $timestamp);
+            $signature = $this->generateSignature($params, $timestamp, $credentials['api_secret']);
 
-            $response = Http::withBasicAuth($this->apiKey, $this->apiSecret)
-                ->get("{$this->baseUrl}/resources/image/upload", array_merge($params, [
+            $response = Http::withBasicAuth($credentials['api_key'], $credentials['api_secret'])
+                ->get("{$credentials['base_url']}/resources/image/upload", array_merge($params, [
                     'timestamp' => $timestamp,
                     'signature' => $signature,
                 ]));
@@ -101,6 +130,8 @@ class CloudinaryController extends Controller
                     'resources' => $resources,
                     'next_cursor' => $data['next_cursor'] ?? null,
                     'total_count' => $data['total_count'] ?? $resources->count(),
+                    'account_id' => $account?->id,
+                    'account_name' => $account?->name,
                 ]);
             }
 
@@ -125,7 +156,11 @@ class CloudinaryController extends Controller
     public function getFolders(Request $request)
     {
         try {
-            if (!$this->cloudName || !$this->apiKey || !$this->apiSecret) {
+            $accountId = $request->get('account_id');
+            $account = $this->getAccount($accountId);
+            $credentials = $this->getCredentials($account);
+
+            if (!$credentials['cloud_name'] || !$credentials['api_key'] || !$credentials['api_secret']) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Cloudinary credentials not configured'
@@ -134,10 +169,10 @@ class CloudinaryController extends Controller
 
             $timestamp = time();
             $params = ['timestamp' => $timestamp];
-            $signature = $this->generateSignature($params, $timestamp);
+            $signature = $this->generateSignature($params, $timestamp, $credentials['api_secret']);
 
-            $response = Http::withBasicAuth($this->apiKey, $this->apiSecret)
-                ->get("{$this->baseUrl}/folders", [
+            $response = Http::withBasicAuth($credentials['api_key'], $credentials['api_secret'])
+                ->get("{$credentials['base_url']}/folders", [
                     'timestamp' => $timestamp,
                     'signature' => $signature,
                 ]);
@@ -180,9 +215,14 @@ class CloudinaryController extends Controller
             $request->validate([
                 'file' => 'required|image|max:10240', // 10MB max
                 'folder' => 'nullable|string',
+                'account_id' => 'nullable|integer|exists:cloudinary_accounts,id',
             ]);
 
-            if (!$this->cloudName || !$this->apiKey || !$this->apiSecret) {
+            $accountId = $request->get('account_id');
+            $account = $this->getAccount($accountId);
+            $credentials = $this->getCredentials($account);
+
+            if (!$credentials['cloud_name'] || !$credentials['api_key'] || !$credentials['api_secret']) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Cloudinary credentials not configured'
@@ -197,12 +237,12 @@ class CloudinaryController extends Controller
                 'timestamp' => $timestamp,
                 'folder' => $folder,
             ];
-            $signature = $this->generateSignature($params, $timestamp);
+            $signature = $this->generateSignature($params, $timestamp, $credentials['api_secret']);
 
             $response = Http::attach(
                 'file', file_get_contents($file->getRealPath()), $file->getClientOriginalName()
-            )->post("{$this->baseUrl}/image/upload", [
-                'api_key' => $this->apiKey,
+            )->post("{$credentials['base_url']}/image/upload", [
+                'api_key' => $credentials['api_key'],
                 'timestamp' => $timestamp,
                 'signature' => $signature,
                 'folder' => $folder,
@@ -245,9 +285,14 @@ class CloudinaryController extends Controller
         try {
             $request->validate([
                 'public_id' => 'required|string',
+                'account_id' => 'nullable|integer|exists:cloudinary_accounts,id',
             ]);
 
-            if (!$this->cloudName || !$this->apiKey || !$this->apiSecret) {
+            $accountId = $request->get('account_id');
+            $account = $this->getAccount($accountId);
+            $credentials = $this->getCredentials($account);
+
+            if (!$credentials['cloud_name'] || !$credentials['api_key'] || !$credentials['api_secret']) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Cloudinary credentials not configured'
@@ -260,9 +305,9 @@ class CloudinaryController extends Controller
                 'public_id' => $publicId,
                 'timestamp' => $timestamp,
             ];
-            $signature = $this->generateSignature($params, $timestamp);
+            $signature = $this->generateSignature($params, $timestamp, $credentials['api_secret']);
 
-            $response = Http::asForm()->post("{$this->baseUrl}/image/destroy", [
+            $response = Http::asForm()->post("{$credentials['base_url']}/image/destroy", [
                 'public_id' => $publicId,
                 'timestamp' => $timestamp,
                 'signature' => $signature,
@@ -403,11 +448,11 @@ class CloudinaryController extends Controller
     /**
      * Generate Cloudinary API signature
      */
-    protected function generateSignature(array $params, int $timestamp): string
+    protected function generateSignature(array $params, int $timestamp, string $apiSecret): string
     {
         $params['timestamp'] = $timestamp;
         ksort($params);
         $signatureString = http_build_query($params);
-        return sha1($signatureString . $this->apiSecret);
+        return sha1($signatureString . $apiSecret);
     }
 }

@@ -107,6 +107,24 @@
             </div>
         </div>
 
+        <!-- Cloudinary Accounts -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="avatar mx-auto mb-3">
+                        <div class="avatar-initial bg-label-primary rounded">
+                            <i class="ri-cloud-line ri-24px"></i>
+                        </div>
+                    </div>
+                    <h5 class="card-title">Cloudinary Accounts</h5>
+                    <p class="card-text text-muted">Manage multiple Cloudinary account connections</p>
+                    <a href="{{ route('admin.cloudinary-accounts.index') }}" class="btn btn-primary btn-sm">
+                        <i class="ri-arrow-right-line me-1"></i>Manage
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <!-- MPESA Daraja -->
         <div class="col-xl-3 col-lg-4 col-md-6">
             <div class="card h-100">

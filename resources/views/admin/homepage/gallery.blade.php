@@ -308,7 +308,14 @@ $activeImages = \App\Models\Gallery::where('is_active', true)->count();
     @if(($viewType ?? 'all') === 'cloudinary')
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="ri-cloud-line me-2"></i>Cloudinary Media Library</h5>
+            <div>
+                <h5 class="mb-0"><i class="ri-cloud-line me-2"></i>Cloudinary Media Library</h5>
+                <small class="text-muted">
+                    <a href="{{ route('admin.cloudinary-accounts.index') }}" class="text-primary">
+                        <i class="ri-settings-3-line me-1"></i>Manage Accounts
+                    </a>
+                </small>
+            </div>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-sm btn-primary" onclick="loadCloudinaryImages()">
                     <i class="ri-refresh-line me-1"></i>Refresh
@@ -321,7 +328,19 @@ $activeImages = \App\Models\Gallery::where('is_active', true)->count();
         <div class="card-body">
             <!-- Cloudinary Filters -->
             <div class="row g-3 mb-4">
-                <div class="col-md-4">
+                @if(($cloudinaryAccounts ?? collect())->count() > 1)
+                <div class="col-md-3">
+                    <label class="form-label">Account</label>
+                    <select class="form-select" id="cloudinary_account" onchange="loadCloudinaryImages()">
+                        @foreach($cloudinaryAccounts as $acc)
+                            <option value="{{ $acc->id }}" {{ $acc->is_default ? 'selected' : '' }}>
+                                {{ $acc->name }} {{ $acc->is_default ? '(Default)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
+                <div class="col-md-{{ ($cloudinaryAccounts ?? collect())->count() > 1 ? '3' : '4' }}">
                     <label class="form-label">Folder</label>
                     <select class="form-select" id="cloudinary_folder" onchange="loadCloudinaryImages()">
                         <option value="">All Folders</option>
@@ -608,7 +627,10 @@ let selectedCloudinaryImages = [];
 let cloudinaryAssets = [];
 
 function loadCloudinaryFolders() {
-    fetch('{{ route("admin.cloudinary.folders") }}', {
+    const accountId = document.getElementById('cloudinary_account')?.value || '';
+    const params = accountId ? `?account_id=${accountId}` : '';
+    
+    fetch('{{ route("admin.cloudinary.folders") }}' + params, {
         headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
     })
     .then(response => response.json())
@@ -630,11 +652,13 @@ function loadCloudinaryFolders() {
 function loadCloudinaryImages() {
     const grid = document.getElementById('cloudinary_grid');
     const folder = document.getElementById('cloudinary_folder')?.value || '';
+    const accountId = document.getElementById('cloudinary_account')?.value || '';
     
     grid.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2">Loading Cloudinary images...</p></div>';
     
     const params = new URLSearchParams({ max_results: 500 });
     if (folder) params.append('folder', folder);
+    if (accountId) params.append('account_id', accountId);
     
     fetch(`{{ route("admin.cloudinary.assets") }}?${params}`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
@@ -741,6 +765,7 @@ function copyCloudinaryUrl(url) {
 function uploadToCloudinary() {
     const fileInput = document.getElementById('cloudinary_file');
     const folderInput = document.getElementById('cloudinary_upload_folder');
+    const accountSelect = document.getElementById('cloudinary_account');
     const form = document.getElementById('cloudinaryUploadForm');
     
     if (!fileInput.files.length) {
@@ -751,6 +776,9 @@ function uploadToCloudinary() {
     const formData = new FormData(form);
     if (folderInput.value) {
         formData.append('folder', folderInput.value);
+    }
+    if (accountSelect && accountSelect.value) {
+        formData.append('account_id', accountSelect.value);
     }
     
     const uploadBtn = event.target;
@@ -795,6 +823,10 @@ function deleteCloudinaryImage(publicId, filename) {
         return;
     }
     
+    const accountId = document.getElementById('cloudinary_account')?.value || '';
+    const body = { public_id: publicId };
+    if (accountId) body.account_id = accountId;
+    
     fetch('{{ route("admin.cloudinary.delete") }}', {
         method: 'POST',
         headers: {
@@ -802,7 +834,7 @@ function deleteCloudinaryImage(publicId, filename) {
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
         },
-        body: JSON.stringify({ public_id: publicId })
+        body: JSON.stringify(body)
     })
     .then(response => response.json())
     .then(data => {
@@ -833,17 +865,20 @@ function deleteSelectedCloudinaryImages() {
         return;
     }
     
-    const promises = selectedCloudinaryImages.map(publicId => 
-        fetch('{{ route("admin.cloudinary.delete") }}', {
+    const accountId = document.getElementById('cloudinary_account')?.value || '';
+    const promises = selectedCloudinaryImages.map(publicId => {
+        const body = { public_id: publicId };
+        if (accountId) body.account_id = accountId;
+        return fetch('{{ route("admin.cloudinary.delete") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
             },
-            body: JSON.stringify({ public_id: publicId })
-        }).then(r => r.json())
-    );
+            body: JSON.stringify(body)
+        }).then(r => r.json());
+    });
     
     Promise.all(promises).then(results => {
         const successCount = results.filter(r => r.success).length;
