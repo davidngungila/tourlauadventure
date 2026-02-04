@@ -87,7 +87,7 @@ class CloudinaryController extends Controller
             $resourceType = $request->get('resource_type', 'image');
             
             $params = [
-                'max_results' => $request->get('max_results', 500),
+                'max_results' => (int) $request->get('max_results', 500),
                 'type' => 'upload',
             ];
 
@@ -102,12 +102,17 @@ class CloudinaryController extends Controller
             // Generate signature for authentication
             $timestamp = time();
             $params['timestamp'] = $timestamp;
-            $signature = $this->generateSignature($params, $timestamp, $credentials['api_secret']);
-            $params['signature'] = $signature;
+            
+            // Generate signature (exclude signature and api_key from signature calculation)
+            $signParams = $params;
+            $signature = $this->generateSignature($signParams, $timestamp, $credentials['api_secret']);
+            
+            // Add api_key and signature to params
             $params['api_key'] = $credentials['api_key'];
+            $params['signature'] = $signature;
 
             // Use the correct API endpoint based on resource type
-            $endpoint = "{$credentials['base_url']}/resources/{$resourceType}/upload";
+            $endpoint = "{$credentials['base_url']}/resources/{$resourceType}";
             
             Log::info('Cloudinary getAssets request', [
                 'endpoint' => $endpoint,
@@ -202,9 +207,14 @@ class CloudinaryController extends Controller
             $params = [
                 'timestamp' => $timestamp,
             ];
-            $signature = $this->generateSignature($params, $timestamp, $credentials['api_secret']);
-            $params['signature'] = $signature;
+            
+            // Generate signature
+            $signParams = $params;
+            $signature = $this->generateSignature($signParams, $timestamp, $credentials['api_secret']);
+            
+            // Add api_key and signature
             $params['api_key'] = $credentials['api_key'];
+            $params['signature'] = $signature;
 
             $endpoint = "{$credentials['base_url']}/folders";
             
@@ -506,6 +516,7 @@ class CloudinaryController extends Controller
 
     /**
      * Generate Cloudinary API signature
+     * Based on Cloudinary Admin API signature generation
      */
     protected function generateSignature(array $params, int $timestamp, string $apiSecret = null): string
     {
@@ -523,17 +534,22 @@ class CloudinaryController extends Controller
         // Ensure timestamp is included
         $signParams['timestamp'] = $timestamp;
         
-        // Sort parameters alphabetically
+        // Sort parameters alphabetically by key
         ksort($signParams);
         
-        // Build query string (without url encoding for signature)
-        $signatureString = '';
+        // Build query string for signature (values should be properly formatted)
+        $signatureParts = [];
         foreach ($signParams as $key => $value) {
-            if ($signatureString !== '') {
-                $signatureString .= '&';
+            if ($value !== null && $value !== '') {
+                // Convert arrays to comma-separated strings
+                if (is_array($value)) {
+                    $value = implode(',', $value);
+                }
+                $signatureParts[] = $key . '=' . $value;
             }
-            $signatureString .= $key . '=' . $value;
         }
+        
+        $signatureString = implode('&', $signatureParts);
         
         // Generate SHA1 signature
         return sha1($signatureString . $apiSecret);
