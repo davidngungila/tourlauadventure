@@ -18,3 +18,4 @@ chown -R www-data:www-data storage/app/public 2>/dev/null || true
 echo "Storage link created successfully!"
 echo "Link: public/storage -> storage/app/public"
 
+

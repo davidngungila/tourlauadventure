@@ -106,3 +106,4 @@ echo "Permissions fixed!"
 
 The image should now display correctly!
 
+

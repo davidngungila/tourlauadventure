@@ -66,3 +66,4 @@ ls -la public/storage
 ### Step 6: Test
 Visit your profile page and try uploading an avatar. The image should now display correctly.
 
+
