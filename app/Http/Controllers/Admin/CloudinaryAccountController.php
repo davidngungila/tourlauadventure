@@ -192,20 +192,20 @@ class CloudinaryAccountController extends Controller
                 'api_secret' => 'required|string|max:255',
                 'cloudinary_url' => 'nullable|string',
                 'description' => 'nullable|string',
-                'is_active' => 'boolean',
-                'is_default' => 'boolean',
+                'is_active' => 'nullable|in:0,1',
+                'is_default' => 'nullable|in:0,1',
             ]);
 
             DB::beginTransaction();
 
-            // If this is set as default, unset others
-            if ($request->filled('is_default') && $request->is_default && !$account->is_default) {
-                CloudinaryAccount::where('id', '!=', $id)->where('is_default', true)->update(['is_default' => false]);
-            }
-
             // Convert checkbox values to boolean (they come as "0" or "1" strings)
             $validated['is_active'] = isset($validated['is_active']) && $validated['is_active'] == '1';
             $validated['is_default'] = isset($validated['is_default']) && $validated['is_default'] == '1';
+
+            // If this is set as default, unset others
+            if ($validated['is_default'] && !$account->is_default) {
+                CloudinaryAccount::where('id', '!=', $id)->where('is_default', true)->update(['is_default' => false]);
+            }
 
             // Remove any fields that don't exist in fillable
             $fillable = (new CloudinaryAccount())->getFillable();
