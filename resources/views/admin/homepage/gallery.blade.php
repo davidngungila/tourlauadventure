@@ -146,6 +146,12 @@ $activeImages = \App\Models\Gallery::where('is_active', true)->count();
                                class="btn btn-sm {{ ($viewType ?? 'all') === 'filesystem' ? 'btn-primary' : 'btn-outline-primary' }}">
                                 <i class="ri-folder-line me-1"></i>Filesystem ({{ $totalFsImages ?? 0 }})
                             </a>
+                            @if($cloudinaryConfigured ?? false)
+                            <a href="{{ route('admin.homepage.gallery', array_merge(request()->all(), ['view' => 'cloudinary'])) }}" 
+                               class="btn btn-sm {{ ($viewType ?? 'all') === 'cloudinary' ? 'btn-primary' : 'btn-outline-primary' }}">
+                                <i class="ri-cloud-line me-1"></i>Cloudinary
+                            </a>
+                            @endif
                         </div>
                         <a href="{{ route('admin.homepage.gallery.create') }}" class="btn btn-primary">
                             <i class="ri-upload-cloud-2-line me-1"></i>Upload Images
@@ -298,7 +304,59 @@ $activeImages = \App\Models\Gallery::where('is_active', true)->count();
         </div>
     </div>
 
+    <!-- Cloudinary Media Library -->
+    @if(($viewType ?? 'all') === 'cloudinary')
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="ri-cloud-line me-2"></i>Cloudinary Media Library</h5>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-primary" onclick="loadCloudinaryImages()">
+                    <i class="ri-refresh-line me-1"></i>Refresh
+                </button>
+                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#cloudinaryUploadModal">
+                    <i class="ri-upload-cloud-2-line me-1"></i>Upload
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Cloudinary Filters -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Folder</label>
+                    <select class="form-select" id="cloudinary_folder" onchange="loadCloudinaryImages()">
+                        <option value="">All Folders</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="text" class="form-control" id="cloudinary_search" placeholder="Search images..." onkeyup="filterCloudinaryImages()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Actions</label>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="importSelectedCloudinaryImages()">
+                            <i class="ri-download-cloud-line me-1"></i>Import Selected
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="deleteSelectedCloudinaryImages()">
+                            <i class="ri-delete-bin-line me-1"></i>Delete Selected
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cloudinary Images Grid -->
+            <div id="cloudinary_grid" class="gallery-simple-grid">
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">Loading Cloudinary images...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Images Grid -->
+    @if(($viewType ?? 'all') !== 'cloudinary')
     <div class="card">
         <div class="card-body">
             @if($images->count() > 0)
@@ -382,7 +440,43 @@ $activeImages = \App\Models\Gallery::where('is_active', true)->count();
             @endif
         </div>
     </div>
+    @endif
 </div>
+
+<!-- Cloudinary Upload Modal -->
+@if(($viewType ?? 'all') === 'cloudinary')
+<div class="modal fade" id="cloudinaryUploadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="ri-upload-cloud-2-line me-2"></i>Upload to Cloudinary</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="cloudinaryUploadForm" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Select Image</label>
+                        <input type="file" class="form-control" id="cloudinary_file" name="file" accept="image/*" required>
+                        <small class="text-muted">Max size: 10MB</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Folder (optional)</label>
+                        <input type="text" class="form-control" id="cloudinary_upload_folder" name="folder" placeholder="e.g., gallery/tours">
+                        <small class="text-muted">Leave empty for root folder</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="uploadToCloudinary()">
+                    <i class="ri-upload-cloud-2-line me-1"></i>Upload
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteGalleryModal" tabindex="-1" aria-hidden="true">
@@ -500,7 +594,310 @@ $(document).ready(function() {
         $('#deleteGalleryForm').attr('action', '{{ route("admin.homepage.gallery.destroy", ":id") }}'.replace(':id', id));
         $('#deleteGalleryModal').modal('show');
     });
+
+    @if(($viewType ?? 'all') === 'cloudinary')
+    // Load Cloudinary folders and images on page load
+    loadCloudinaryFolders();
+    loadCloudinaryImages();
+    @endif
 });
+
+@if(($viewType ?? 'all') === 'cloudinary')
+// ========== CLOUDINARY INTEGRATION ==========
+let selectedCloudinaryImages = [];
+let cloudinaryAssets = [];
+
+function loadCloudinaryFolders() {
+    fetch('{{ route("admin.cloudinary.folders") }}', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.folders) {
+            const select = document.getElementById('cloudinary_folder');
+            select.innerHTML = '<option value="">All Folders</option>';
+            data.folders.forEach(folder => {
+                const option = document.createElement('option');
+                option.value = folder.path;
+                option.textContent = folder.name;
+                select.appendChild(option);
+            });
+        }
+    })
+    .catch(err => console.log('Could not load Cloudinary folders'));
+}
+
+function loadCloudinaryImages() {
+    const grid = document.getElementById('cloudinary_grid');
+    const folder = document.getElementById('cloudinary_folder')?.value || '';
+    
+    grid.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2">Loading Cloudinary images...</p></div>';
+    
+    const params = new URLSearchParams({ max_results: 500 });
+    if (folder) params.append('folder', folder);
+    
+    fetch(`{{ route("admin.cloudinary.assets") }}?${params}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        grid.innerHTML = '';
+        
+        if (!data.success) {
+            grid.innerHTML = `<div class="col-12 text-center py-5"><p class="text-danger">${data.message || 'Failed to load'}</p><small>Make sure CLOUDINARY_URL is set in .env</small></div>`;
+            return;
+        }
+        
+        cloudinaryAssets = data.resources || [];
+        
+        if (cloudinaryAssets.length === 0) {
+            grid.innerHTML = '<div class="col-12 text-center py-5"><p class="text-muted">No images found in Cloudinary</p></div>';
+            return;
+        }
+        
+        cloudinaryAssets.forEach(asset => {
+            const item = document.createElement('div');
+            item.className = 'gallery-item-simple cloudinary-item';
+            item.setAttribute('data-public-id', asset.public_id);
+            item.setAttribute('data-url', asset.url);
+            item.setAttribute('data-name', asset.filename.toLowerCase());
+            
+            const isSelected = selectedCloudinaryImages.includes(asset.public_id);
+            
+            item.innerHTML = `
+                <input type="checkbox" class="gallery-item-checkbox form-check-input cloudinary-checkbox" 
+                       value="${asset.public_id}" ${isSelected ? 'checked' : ''} 
+                       onchange="toggleCloudinarySelection('${asset.public_id}')">
+                <div class="gallery-item-actions">
+                    <a href="${asset.url}" target="_blank" class="btn btn-sm btn-light" title="View">
+                        <i class="ri-eye-line"></i>
+                    </a>
+                    <button type="button" class="btn btn-sm btn-light" onclick="copyCloudinaryUrl('${asset.url.replace(/'/g, "\\'")}')" title="Copy URL">
+                        <i class="ri-file-copy-line"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-light text-danger" onclick="deleteCloudinaryImage('${asset.public_id}', '${asset.filename.replace(/'/g, "\\'")}')" title="Delete">
+                        <i class="ri-delete-bin-line"></i>
+                    </button>
+                </div>
+                <img src="${asset.url}" alt="${asset.filename}" loading="lazy">
+                <div class="gallery-item-info">
+                    <div class="gallery-item-title" title="${asset.filename}">${asset.filename}</div>
+                    <div class="gallery-item-meta">
+                        <span>${asset.width || '?'}×${asset.height || '?'}</span>
+                        <span class="badge bg-label-warning" style="font-size: 0.7rem;">
+                            <i class="ri-cloud-line"></i> Cloudinary
+                        </span>
+                    </div>
+                    ${asset.folder ? `<div class="mt-1"><small class="text-muted" style="font-size: 0.7rem;"><i class="ri-folder-line"></i> ${asset.folder}</small></div>` : ''}
+                </div>
+            `;
+            
+            if (isSelected) {
+                item.classList.add('selected');
+            }
+            
+            grid.appendChild(item);
+        });
+    })
+    .catch(error => {
+        console.error('Error loading Cloudinary images:', error);
+        grid.innerHTML = '<div class="col-12 text-center py-5"><p class="text-danger">Error loading Cloudinary images</p></div>';
+    });
+}
+
+function filterCloudinaryImages() {
+    const search = document.getElementById('cloudinary_search')?.value.toLowerCase() || '';
+    document.querySelectorAll('.cloudinary-item').forEach(item => {
+        const name = item.getAttribute('data-name') || '';
+        item.style.display = name.includes(search) ? '' : 'none';
+    });
+}
+
+function toggleCloudinarySelection(publicId) {
+    const index = selectedCloudinaryImages.indexOf(publicId);
+    const item = document.querySelector(`[data-public-id="${publicId}"]`);
+    
+    if (index > -1) {
+        selectedCloudinaryImages.splice(index, 1);
+        item?.classList.remove('selected');
+    } else {
+        selectedCloudinaryImages.push(publicId);
+        item?.classList.add('selected');
+    }
+}
+
+function copyCloudinaryUrl(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        if (typeof toastr !== 'undefined') {
+            toastr.success('URL copied to clipboard');
+        } else {
+            alert('URL copied to clipboard');
+        }
+    }).catch(() => {
+        alert('URL: ' + url);
+    });
+}
+
+function uploadToCloudinary() {
+    const fileInput = document.getElementById('cloudinary_file');
+    const folderInput = document.getElementById('cloudinary_upload_folder');
+    const form = document.getElementById('cloudinaryUploadForm');
+    
+    if (!fileInput.files.length) {
+        alert('Please select a file to upload');
+        return;
+    }
+    
+    const formData = new FormData(form);
+    if (folderInput.value) {
+        formData.append('folder', folderInput.value);
+    }
+    
+    const uploadBtn = event.target;
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Uploading...';
+    
+    fetch('{{ route("admin.cloudinary.upload") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (typeof toastr !== 'undefined') {
+                toastr.success(data.message || 'File uploaded successfully');
+            } else {
+                alert(data.message || 'File uploaded successfully');
+            }
+            bootstrap.Modal.getInstance(document.getElementById('cloudinaryUploadModal')).hide();
+            form.reset();
+            loadCloudinaryImages();
+        } else {
+            alert(data.message || 'Upload failed');
+        }
+    })
+    .catch(error => {
+        console.error('Upload error:', error);
+        alert('Upload failed: ' + error.message);
+    })
+    .finally(() => {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<i class="ri-upload-cloud-2-line me-1"></i>Upload';
+    });
+}
+
+function deleteCloudinaryImage(publicId, filename) {
+    if (!confirm(`Delete "${filename}" from Cloudinary? This action cannot be undone.`)) {
+        return;
+    }
+    
+    fetch('{{ route("admin.cloudinary.delete") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        },
+        body: JSON.stringify({ public_id: publicId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (typeof toastr !== 'undefined') {
+                toastr.success(data.message || 'Image deleted successfully');
+            } else {
+                alert(data.message || 'Image deleted successfully');
+            }
+            loadCloudinaryImages();
+        } else {
+            alert(data.message || 'Delete failed');
+        }
+    })
+    .catch(error => {
+        console.error('Delete error:', error);
+        alert('Delete failed: ' + error.message);
+    });
+}
+
+function deleteSelectedCloudinaryImages() {
+    if (selectedCloudinaryImages.length === 0) {
+        alert('Please select images to delete');
+        return;
+    }
+    
+    if (!confirm(`Delete ${selectedCloudinaryImages.length} image(s) from Cloudinary? This action cannot be undone.`)) {
+        return;
+    }
+    
+    const promises = selectedCloudinaryImages.map(publicId => 
+        fetch('{{ route("admin.cloudinary.delete") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            },
+            body: JSON.stringify({ public_id: publicId })
+        }).then(r => r.json())
+    );
+    
+    Promise.all(promises).then(results => {
+        const successCount = results.filter(r => r.success).length;
+        if (typeof toastr !== 'undefined') {
+            toastr.success(`${successCount} image(s) deleted successfully`);
+        } else {
+            alert(`${successCount} image(s) deleted successfully`);
+        }
+        selectedCloudinaryImages = [];
+        loadCloudinaryImages();
+    });
+}
+
+function importSelectedCloudinaryImages() {
+    if (selectedCloudinaryImages.length === 0) {
+        alert('Please select images to import');
+        return;
+    }
+    
+    const selectedAssets = cloudinaryAssets.filter(a => selectedCloudinaryImages.includes(a.public_id));
+    
+    if (!confirm(`Import ${selectedAssets.length} image(s) to gallery database?`)) {
+        return;
+    }
+    
+    const promises = selectedAssets.map(asset =>
+        fetch('{{ route("admin.cloudinary.import-to-gallery") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            },
+            body: JSON.stringify({
+                public_id: asset.public_id,
+                url: asset.url,
+                category: 'Cloudinary Import'
+            })
+        }).then(r => r.json())
+    );
+    
+    Promise.all(promises).then(results => {
+        const successCount = results.filter(r => r.success).length;
+        if (typeof toastr !== 'undefined') {
+            toastr.success(`${successCount} image(s) imported to gallery successfully`);
+        } else {
+            alert(`${successCount} image(s) imported to gallery successfully`);
+        }
+        selectedCloudinaryImages = [];
+        // Redirect to database view to see imported images
+        window.location.href = '{{ route("admin.homepage.gallery", ["view" => "database"]) }}';
+    });
+}
+@endif
 </script>
 @endpush
 @endsection
