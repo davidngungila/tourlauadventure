@@ -481,29 +481,52 @@
 </li>
 @endif
 
-{{-- 🟪 MESSAGES & SUPPORT --}}
-@if($user->hasAnyRole(['System Administrator', 'Travel Consultant', 'Reservations Officer']))
-<li class="menu-item {{ request()->routeIs('admin.queries.*') || request()->routeIs('admin.tickets.*') || request()->routeIs('admin.notifications.*') ? 'active open' : '' }}">
+{{-- 🟪 WEBSITE ISSUES & SUPPORT --}}
+@if($user->hasAnyRole(['System Administrator', 'Travel Consultant', 'Reservations Officer', 'ICT Officer']))
+<li class="menu-item {{ request()->routeIs('admin.issues.*') || request()->routeIs('admin.queries.*') || request()->routeIs('admin.tickets.*') || request()->routeIs('admin.notifications.*') || request()->routeIs('admin.settings.system-logs*') || request()->routeIs('admin.settings.system-health*') ? 'active open' : '' }}">
     <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri-message-3-line"></i>
-        <div data-i18n="Messages & Support">Messages & Support</div>
+        <i class="menu-icon tf-icons ri-bug-line"></i>
+        <div data-i18n="Website Issues">Website Issues</div>
     </a>
     <ul class="menu-sub">
+        <li class="menu-item {{ request()->routeIs('admin.issues.index') ? 'active' : '' }}">
+            <a href="{{ route('admin.issues.index') }}" class="menu-link">
+                <i class="ri-dashboard-line me-2"></i>
+                <div data-i18n="Issues Dashboard">Issues Dashboard</div>
+            </a>
+        </li>
         <li class="menu-item {{ request()->routeIs('admin.queries.*') ? 'active' : '' }}">
             <a href="{{ route('admin.queries.index') }}" class="menu-link">
+                <i class="ri-question-answer-line me-2"></i>
                 <div data-i18n="Customer Queries">Customer Queries</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
             <a href="{{ route('admin.tickets.index') }}" class="menu-link">
+                <i class="ri-customer-service-2-line me-2"></i>
                 <div data-i18n="Support Tickets">Support Tickets</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
             <a href="{{ route('admin.notifications.index') }}" class="menu-link">
+                <i class="ri-notification-line me-2"></i>
                 <div data-i18n="Notifications">Notifications</div>
             </a>
         </li>
+        @if($user->hasAnyRole(['System Administrator', 'ICT Officer']))
+        <li class="menu-item {{ request()->routeIs('admin.settings.system-health*') ? 'active' : '' }}">
+            <a href="{{ route('admin.settings.system-health') }}" class="menu-link">
+                <i class="ri-heart-pulse-line me-2"></i>
+                <div data-i18n="System Health">System Health</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.settings.system-logs*') ? 'active' : '' }}">
+            <a href="{{ route('admin.settings.system-logs') }}" class="menu-link">
+                <i class="ri-file-list-3-line me-2"></i>
+                <div data-i18n="System Logs">System Logs</div>
+            </a>
+        </li>
+        @endif
     </ul>
 </li>
 @endif
@@ -623,16 +646,6 @@
         <li class="menu-item {{ request()->routeIs('admin.settings.backups*') ? 'active' : '' }}">
             <a href="{{ route('admin.settings.backups') }}" class="menu-link">
                 <div data-i18n="Backup Manager">Backup Manager</div>
-            </a>
-        </li>
-        <li class="menu-item {{ request()->routeIs('admin.settings.system-health') ? 'active' : '' }}">
-            <a href="{{ route('admin.settings.system-health') }}" class="menu-link">
-                <div data-i18n="System Health">System Health</div>
-            </a>
-        </li>
-        <li class="menu-item {{ request()->routeIs('admin.settings.system-logs*') ? 'active' : '' }}">
-            <a href="{{ route('admin.settings.system-logs') }}" class="menu-link">
-                <div data-i18n="System Logs">System Logs</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.settings.audit-trails*') ? 'active' : '' }}">

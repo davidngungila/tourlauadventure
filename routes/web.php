@@ -1098,6 +1098,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('/users/{id}', [AdminUserManagementController::class, 'destroy'])->name('users.destroy');
     });
     
+    // Website Issues Dashboard - Unified view of all issues
+    Route::middleware(['role:System Administrator|Travel Consultant|Reservations Officer|ICT Officer'])->group(function () {
+        Route::get('/issues', [\App\Http\Controllers\Admin\WebsiteIssuesController::class, 'index'])->name('issues.index');
+    });
+    
     // Customer Queries - System Administrator, Travel Consultant, Reservations Officer
     Route::middleware(['role:System Administrator|Travel Consultant|Reservations Officer'])->group(function () {
         Route::get('/queries', [AdminCustomerQueriesController::class, 'index'])->name('queries.index');
