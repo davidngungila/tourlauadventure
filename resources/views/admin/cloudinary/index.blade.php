@@ -185,30 +185,59 @@ function loadCloudinaryImages() {
     fetch('{{ route("admin.cloudinary.assets") }}?' + params, {
         headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
     })
-    .then(r => {
-        if (!r.ok) {
-            throw new Error(`HTTP error! status: ${r.status}`);
+    .then(async r => {
+        const responseText = await r.text();
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            throw new Error(`Invalid JSON response: ${responseText.substring(0, 200)}`);
         }
-        return r.json();
+        
+        if (!r.ok) {
+            throw new Error(data.message || `HTTP error! status: ${r.status}`);
+        }
+        
+        return data;
     })
     .then(data => {
         grid.innerHTML = '';
         if (data.success === false) {
+            let errorDetails = '';
+            if (data.error) {
+                try {
+                    const errorObj = typeof data.error === 'string' ? JSON.parse(data.error) : data.error;
+                    if (errorObj.error && errorObj.error.message) {
+                        errorDetails = errorObj.error.message;
+                    } else {
+                        errorDetails = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+                    }
+                } catch (e) {
+                    errorDetails = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+                }
+            }
+            
             grid.innerHTML = `<div class="col-12 text-center py-5">
                 <div class="alert alert-danger">
                     <i class="ri-error-warning-line me-2"></i>
                     <strong>Error:</strong> ${data.message || 'Failed to load images'}
-                    ${data.error ? '<br><small>' + data.error + '</small>' : ''}
+                    ${errorDetails ? '<br><br><strong>Details:</strong><br><small class="text-muted">' + errorDetails + '</small>' : ''}
                 </div>
                 <p class="text-muted mt-3">Please check:</p>
                 <ul class="text-start text-muted">
                     <li>Cloudinary account is configured correctly</li>
                     <li>Account credentials are valid</li>
                     <li>You have at least one active Cloudinary account</li>
+                    <li>API key and secret are correct</li>
                 </ul>
-                <a href="{{ route('admin.cloudinary-accounts.index') }}" class="btn btn-primary mt-3">
-                    <i class="ri-settings-3-line me-1"></i>Manage Accounts
-                </a>
+                <div class="d-flex gap-2 justify-content-center mt-3">
+                    <a href="{{ route('admin.cloudinary-accounts.index') }}" class="btn btn-primary">
+                        <i class="ri-settings-3-line me-1"></i>Manage Accounts
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary" onclick="loadCloudinaryImages()">
+                        <i class="ri-refresh-line me-1"></i>Retry
+                    </button>
+                </div>
             </div>`;
             return;
         }
