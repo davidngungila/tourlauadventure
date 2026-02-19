@@ -2,17 +2,39 @@
 /* CSS VARIABLES & RESET */
 /* ============================================ */
 :root {
-    --primary-green: #1a4d3a;
-    --secondary-green: #2d7a5f;
-    --accent-green: #3ea572;
-    --light-green: #e8f5f0;
-    --dark-green: #0f3429;
+    /* Primary Palette - Nature & Luxury */
+    --primary-green: #0a2e24;
+    /* Deeper, more luxurious green */
+    --secondary-green: #1a4d3a;
+    --accent-green: #4ade80;
+    /* Brighter, modern accent */
+    --gold: #bc9c5d;
+    /* Sophisticated gold for highlights */
+    --gold-light: #d4c19d;
+
+    /* Neutrals */
     --white: #ffffff;
-    --black: #1a1a1a;
-    --gray-light: #f8f9fa;
-    --gray: #6c757d;
-    --font-primary: "Manrope", sans-serif;
-    --shadow: rgba(26, 77, 58, 0.08);
+    --off-white: #fcfaf7;
+    /* Warmer background */
+    --black: #111827;
+    --gray-dark: #374151;
+    --gray: #6b7280;
+    --gray-light: #f3f4f6;
+
+    /* Typography */
+    --font-heading: 'Syncopate', 'Playfair Display', serif;
+    /* Blend of modern and classic */
+    --font-body: 'Inter', 'Manrope', sans-serif;
+
+    /* Shadows & Effects */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --glass: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.3);
+
+    /* Transitions */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -110,15 +132,15 @@ body {
     .logo {
         height: 55px;
     }
-    
+
     .logo-img {
         height: 55px;
     }
-    
+
     .footer-logo {
         height: 70px;
     }
-    
+
     .footer-logo-img {
         height: 70px;
     }
@@ -442,7 +464,7 @@ body {
     .dropdown-menu {
         min-width: 500px;
     }
-    
+
     .dropdown-grid {
         grid-template-columns: 1fr;
     }
@@ -460,7 +482,7 @@ body {
         min-width: auto;
         max-width: none;
     }
-    
+
     .nav-item-dropdown:hover .dropdown-menu {
         transform: none;
     }
@@ -871,6 +893,7 @@ body {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -882,6 +905,7 @@ body {
         opacity: 0;
         transform: translateX(-100px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -893,6 +917,7 @@ body {
         opacity: 0;
         transform: translateX(100px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -904,6 +929,7 @@ body {
         opacity: 0;
         transform: scale(0.8);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -915,6 +941,7 @@ body {
         opacity: 0;
         transform: scale(0.9) translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: scale(1) translateY(0);
@@ -926,6 +953,7 @@ body {
         opacity: 0;
         transform: rotate(-10deg) scale(0.9);
     }
+
     to {
         opacity: 1;
         transform: rotate(0deg) scale(1);
@@ -937,10 +965,12 @@ body {
         opacity: 0;
         transform: translateY(50px);
     }
+
     60% {
         opacity: 1;
         transform: translateY(-10px);
     }
+
     100% {
         opacity: 1;
         transform: translateY(0);
@@ -952,6 +982,7 @@ body {
         opacity: 0;
         transform: translateY(-30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1024,6 +1055,7 @@ body {
 
 /* Responsive adjustments for slide types */
 @media (max-width: 992px) {
+
     .slide-type-2 .hero-content,
     .slide-type-3 .hero-content,
     .slide-type-5 .hero-content,
@@ -1465,55 +1497,55 @@ body {
         max-width: 95%;
         margin: 20px;
     }
-    
+
     .search-modal-body {
         padding: 40px 25px 30px;
     }
-    
+
     .search-modal-icon {
         width: 70px;
         height: 70px;
         font-size: 2rem;
     }
-    
+
     .search-modal-body h2 {
         font-size: 1.5rem;
     }
-    
+
     .search-modal-message {
         font-size: 0.95rem;
     }
-    
+
     .search-modal-actions {
         flex-direction: column;
     }
-    
+
     .btn-search-call,
     .btn-search-contact {
         width: 100%;
     }
-    
+
     .quick-links-grid {
         grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 768px) {
-    
+
     .search-modal-content {
         padding: 20px;
         max-width: 95%;
     }
-    
+
     .search-modal-header h3 {
         font-size: 1.2rem;
     }
-    
+
     .btn-search-modal {
         padding: 12px 20px;
         font-size: 0.9rem;
     }
-    
+
     .btn-search-modal span {
         display: none;
     }
@@ -2196,7 +2228,7 @@ body {
     z-index: 1;
 }
 
-.footer-main > * {
+.footer-main>* {
     position: relative;
     z-index: 2;
 }
@@ -2466,39 +2498,39 @@ body {
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    
+
     .hero-subtitle {
         font-size: 1rem;
     }
-    
+
     .section-title {
         font-size: 2rem;
     }
-    
+
     .cta-title {
         font-size: 2rem;
     }
-    
+
     .search-row {
         grid-template-columns: 1fr;
     }
-    
-    
+
+
     .hero-actions {
         flex-direction: column;
         width: 100%;
     }
-    
+
     .btn-hero-primary,
     .btn-hero-secondary {
         width: 100%;
         justify-content: center;
     }
-    
+
     .cta-buttons {
         flex-direction: column;
     }
-    
+
     .cta-btn {
         width: 100%;
         justify-content: center;
@@ -2537,8 +2569,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* ============================================ */
@@ -2618,13 +2655,13 @@ body {
         right: 20px;
         gap: 12px;
     }
-    
+
     .contact-icon-btn {
         width: 55px;
         height: 55px;
         font-size: 1.5rem;
     }
-    
+
     .back-to-top {
         bottom: 20px;
         right: 20px;
@@ -2638,7 +2675,7 @@ body {
         right: 20px;
         gap: 12px;
     }
-    
+
     .contact-icon-btn {
         width: 55px;
         height: 55px;
@@ -2660,7 +2697,7 @@ body {
 
 .btn-large:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .section-footer {
@@ -2678,7 +2715,7 @@ body {
 
 .tour-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
 }
 
 .tour-card-image {
@@ -2716,4 +2753,3 @@ body {
     position: relative;
     z-index: 1;
 }
-

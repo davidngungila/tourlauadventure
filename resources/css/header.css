@@ -1,0 +1,103 @@
+/* Premium Header Styles */
+
+.header-main {
+    padding: 0;
+    background: transparent;
+    transition: var(--transition-smooth);
+}
+
+.header-main.sticky {
+    background: var(--glass);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 10px 0;
+}
+
+.top-bar {
+    background: var(--primary-green);
+    color: var(--gold-light);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+    padding: 10px 0;
+}
+
+.main-nav {
+    padding: 30px 0;
+}
+
+.nav-link {
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--white);
+    transition: var(--transition-smooth);
+}
+
+.header-main.sticky .nav-link {
+    color: var(--primary-green);
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--gold) !important;
+}
+
+.btn-cta {
+    background: var(--gold);
+    border-radius: 8px;
+    color: var(--white);
+    padding: 12px 24px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: var(--transition-smooth);
+}
+
+.btn-cta:hover {
+    background: var(--primary-green);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Mega Menu / Dropdown */
+.dropdown-menu {
+    border-radius: 24px;
+    padding: 40px;
+    background: var(--white);
+    border: 1px solid var(--gray-light);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-header h3 {
+    font-family: var(--font-heading);
+    color: var(--primary-green);
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    letter-spacing: -0.5px;
+}
+
+.dropdown-item {
+    border-radius: 16px;
+    padding: 12px;
+}
+
+.dropdown-item h4 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    color: var(--primary-green);
+}
+
+@media (max-width: 992px) {
+    .main-nav {
+        padding: 20px 0;
+    }
+
+    .nav-link {
+        color: var(--primary-green);
+    }
+}

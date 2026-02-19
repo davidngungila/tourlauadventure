@@ -9,7 +9,8 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/css/pages/home.css',
-                'resources/js/pages/home.js'
+                'resources/js/pages/home.js',
+                'resources/css/pages/safaris.css'
             ],
             refresh: true,
         }),

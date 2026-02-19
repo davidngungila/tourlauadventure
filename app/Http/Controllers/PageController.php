@@ -5,11 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+use App\Services\PublicDataService;
+
 /**
  * Handles the rendering of static and informational pages.
  */
 class PageController extends Controller
 {
+    protected $publicData;
+
+    public function __construct(PublicDataService $publicData)
+    {
+        $this->publicData = $publicData;
+    }
     /**
      * Display the homepage.
      *
@@ -55,27 +63,7 @@ class PageController extends Controller
             });
         
         // Get featured tours for home page
-        $featuredTours = \App\Models\Tour::with('destination')
-            ->where('status', 'active')
-            ->where('publish_status', 'published')
-            ->where('is_featured', true)
-            ->orderBy('created_at', 'desc')
-            ->take(3)
-            ->get()
-            ->map(function($tour) {
-                return [
-                    'id' => $tour->id,
-                    'name' => $tour->name,
-                    'slug' => $tour->slug,
-                    'price' => (float) $tour->price,
-                    'starting_price' => (float) ($tour->starting_price ?? $tour->price),
-                    'duration_days' => $tour->duration_days,
-                    'image' => $tour->image_url ? (str_starts_with($tour->image_url, 'http') ? $tour->image_url : asset($tour->image_url)) : asset('images/safari_home-1.jpg'),
-                    'description' => $tour->short_description ?: substr($tour->description ?? '', 0, 150) . '...',
-                    'destination' => $tour->destination ? $tour->destination->name : 'Tanzania',
-                    'rating' => $tour->rating ?? 4.5,
-                ];
-            });
+        $featuredTours = $this->publicData->getFeaturedTours(3);
 
         // Get homepage gallery images
         $homepageGallery = \App\Models\Gallery::where('is_active', true)
@@ -305,34 +293,7 @@ class PageController extends Controller
      */
     public function safaris(Request $request): View
     {
-        // Get safari tours from database
-        $safariTours = \App\Models\Tour::with('destination')
-            ->where('status', 'active')
-            ->where('publish_status', 'published')
-            ->where(function($query) {
-                $query->where('name', 'like', '%Safari%')
-                      ->orWhere('description', 'like', '%Safari%')
-                      ->orWhere('short_description', 'like', '%Safari%');
-            })
-            ->orderBy('is_featured', 'desc')
-            ->orderBy('price', 'asc')
-            ->get()
-            ->map(function($tour) {
-                return [
-                    'id' => $tour->id,
-                    'name' => $tour->name,
-                    'slug' => $tour->slug,
-                    'price' => (float) $tour->price,
-                    'starting_price' => (float) ($tour->starting_price ?? $tour->price),
-                    'duration_days' => $tour->duration_days,
-                    'image' => $tour->image_url ? (str_starts_with($tour->image_url, 'http') ? $tour->image_url : asset($tour->image_url)) : asset('images/hero-slider/safari-adventure.jpg'),
-                    'description' => $tour->short_description ?: substr($tour->description ?? '', 0, 200) . '...',
-                    'destination' => $tour->destination ? $tour->destination->name : 'Tanzania',
-                    'rating' => $tour->rating ?? 4.5,
-                    'is_featured' => $tour->is_featured ?? false,
-                ];
-            });
-
+        $safariTours = $this->publicData->getSafariTours();
         return view('pages.safaris', compact('safariTours'));
     }
 
