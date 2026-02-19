@@ -15,11 +15,8 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="{{ asset('css/vendor/fontawesome-all.min.css') }}">
     
-    <!-- AOS Animation Library -->
-    <link href="{{ asset('css/vendor/aos.css') }}" rel="stylesheet">
-    
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="{{ asset('css/main.css') }}">
+    <!-- Scripts & Styles via Vite -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
 </head>
@@ -60,10 +57,6 @@
     </div>
     
     <!-- JavaScript -->
-    <script src="{{ asset('js/vendor/aos.js') }}"></script>
-    <!-- Bootstrap JS for modals -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-    <script src="{{ asset('js/main.js') }}"></script>
     
     @stack('scripts')
 </body>

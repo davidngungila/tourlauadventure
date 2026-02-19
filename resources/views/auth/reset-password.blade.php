@@ -6,10 +6,10 @@
     <meta name="robots" content="noindex, nofollow" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     
-    <title>Reset Password - {{ config('app.name', 'TourPilot') }}</title>
+    <title>Reset Password - {{ config('app.name', 'Tour Admin') }}</title>
     
     <!-- Canonical SEO -->
-    <meta name="description" content="{{ config('app.name', 'TourPilot') }} - Reset your password" />
+    <meta name="description" content="{{ config('app.name', 'Tour Admin') }} - Reset your password" />
     <meta name="keywords" content="reset password, change password, tour admin" />
     
     <!-- Favicon -->
@@ -128,7 +128,7 @@
                     </svg>
                   </span>
                 </span>
-                <span class="app-brand-text demo text-heading fw-semibold">{{ config('app.name', 'TourPilot') }}</span>
+                <span class="app-brand-text demo text-heading fw-semibold">{{ config('app.name', 'Materio') }}</span>
               </a>
             </div>
             <!-- /Logo -->

@@ -390,91 +390,69 @@
 </li>
 @endif
 
-{{-- 🟪 WEBSITE CONTENT MANAGEMENT --}}
+{{-- 🟪 HOMEPAGE SECTIONS --}}
 @if($user->hasAnyRole(['System Administrator', 'Content Manager']))
-<li class="menu-item {{ request()->routeIs('admin.homepage.*') || request()->routeIs('admin.about-page.*') || request()->routeIs('admin.contact-page.*') || request()->routeIs('admin.cloudinary.*') || request()->routeIs('admin.cloudinary-accounts.*') ? 'active open' : '' }}">
+<li class="menu-item {{ request()->routeIs('admin.homepage.*') ? 'active open' : '' }}">
     <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri-global-line"></i>
-        <div data-i18n="Website Content">Website Content</div>
+        <i class="menu-icon tf-icons ri-home-line"></i>
+        <div data-i18n="Homepage Sections">Homepage Sections</div>
     </a>
     <ul class="menu-sub">
-        {{-- Homepage Sections --}}
         <li class="menu-item {{ request()->routeIs('admin.homepage.destinations') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.destinations') }}" class="menu-link">
-                <i class="ri-map-pin-line me-2"></i>
                 <div data-i18n="Destinations">Destinations</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.hero-slider*') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.hero-slider') }}" class="menu-link">
-                <i class="ri-slideshow-line me-2"></i>
                 <div data-i18n="Hero Slider">Hero Slider</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.gallery') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.gallery') }}" class="menu-link">
-                <i class="ri-image-line me-2"></i>
                 <div data-i18n="Gallery">Gallery</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.testimonials') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.testimonials') }}" class="menu-link">
-                <i class="ri-star-line me-2"></i>
                 <div data-i18n="Testimonials">Testimonials</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.blog-posts') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.blog-posts') }}" class="menu-link">
-                <i class="ri-article-line me-2"></i>
                 <div data-i18n="Blog Posts">Blog Posts</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.faq') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.faq') }}" class="menu-link">
-                <i class="ri-question-line me-2"></i>
                 <div data-i18n="FAQ">FAQ</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.policies') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.policies') }}" class="menu-link">
-                <i class="ri-file-text-line me-2"></i>
                 <div data-i18n="Company Policies">Company Policies</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.homepage.seo') ? 'active' : '' }}">
             <a href="{{ route('admin.homepage.seo') }}" class="menu-link">
-                <i class="ri-search-line me-2"></i>
                 <div data-i18n="SEO Management">SEO Management</div>
             </a>
         </li>
-        
-        {{-- Page Management --}}
-        <li class="menu-divider"></li>
-        <li class="menu-item {{ request()->routeIs('admin.about-page.*') ? 'active' : '' }}">
+    </ul>
+</li>
+@endif
+
+{{-- 🟪 ABOUT PAGE MANAGEMENT --}}
+@if($user->hasAnyRole(['System Administrator', 'Content Manager']))
+<li class="menu-item {{ request()->routeIs('admin.about-page.*') ? 'active open' : '' }}">
+    <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri-information-line"></i>
+        <div data-i18n="About Page">About Page</div>
+    </a>
+    <ul class="menu-sub">
+        <li class="menu-item {{ request()->routeIs('admin.about-page.index') ? 'active' : '' }}">
             <a href="{{ route('admin.about-page.index') }}" class="menu-link">
-                <i class="ri-information-line me-2"></i>
-                <div data-i18n="About Page">About Page</div>
-            </a>
-        </li>
-        <li class="menu-item {{ request()->routeIs('admin.contact-page.*') ? 'active' : '' }}">
-            <a href="{{ route('admin.contact-page.index') }}" class="menu-link">
-                <i class="ri-mail-line me-2"></i>
-                <div data-i18n="Contact Page">Contact Page</div>
-            </a>
-        </li>
-        
-        {{-- Media Management --}}
-        <li class="menu-divider"></li>
-        <li class="menu-item {{ request()->routeIs('admin.cloudinary.index') ? 'active' : '' }}">
-            <a href="{{ route('admin.cloudinary.index') }}" class="menu-link">
-                <i class="ri-cloud-line me-2"></i>
-                <div data-i18n="Cloudinary Media">Cloudinary Media</div>
-            </a>
-        </li>
-        <li class="menu-item {{ request()->routeIs('admin.cloudinary-accounts.*') ? 'active' : '' }}">
-            <a href="{{ route('admin.cloudinary-accounts.index') }}" class="menu-link">
-                <i class="ri-cloud-settings-line me-2"></i>
-                <div data-i18n="Cloudinary Accounts">Cloudinary Accounts</div>
+                <div data-i18n="Manage About Page">Manage About Page</div>
             </a>
         </li>
     </ul>
@@ -503,52 +481,29 @@
 </li>
 @endif
 
-{{-- 🟪 WEBSITE ISSUES & SUPPORT --}}
-@if($user->hasAnyRole(['System Administrator', 'Travel Consultant', 'Reservations Officer', 'ICT Officer']))
-<li class="menu-item {{ request()->routeIs('admin.issues.*') || request()->routeIs('admin.queries.*') || request()->routeIs('admin.tickets.*') || request()->routeIs('admin.notifications.*') || request()->routeIs('admin.settings.system-logs*') || request()->routeIs('admin.settings.system-health*') ? 'active open' : '' }}">
+{{-- 🟪 MESSAGES & SUPPORT --}}
+@if($user->hasAnyRole(['System Administrator', 'Travel Consultant', 'Reservations Officer']))
+<li class="menu-item {{ request()->routeIs('admin.queries.*') || request()->routeIs('admin.tickets.*') || request()->routeIs('admin.notifications.*') ? 'active open' : '' }}">
     <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri-bug-line"></i>
-        <div data-i18n="Website Issues">Website Issues</div>
+        <i class="menu-icon tf-icons ri-message-3-line"></i>
+        <div data-i18n="Messages & Support">Messages & Support</div>
     </a>
     <ul class="menu-sub">
-        <li class="menu-item {{ request()->routeIs('admin.issues.index') ? 'active' : '' }}">
-            <a href="{{ route('admin.issues.index') }}" class="menu-link">
-                <i class="ri-dashboard-line me-2"></i>
-                <div data-i18n="Issues Dashboard">Issues Dashboard</div>
-            </a>
-        </li>
         <li class="menu-item {{ request()->routeIs('admin.queries.*') ? 'active' : '' }}">
             <a href="{{ route('admin.queries.index') }}" class="menu-link">
-                <i class="ri-question-answer-line me-2"></i>
                 <div data-i18n="Customer Queries">Customer Queries</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
             <a href="{{ route('admin.tickets.index') }}" class="menu-link">
-                <i class="ri-customer-service-2-line me-2"></i>
                 <div data-i18n="Support Tickets">Support Tickets</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
             <a href="{{ route('admin.notifications.index') }}" class="menu-link">
-                <i class="ri-notification-line me-2"></i>
                 <div data-i18n="Notifications">Notifications</div>
             </a>
         </li>
-        @if($user->hasAnyRole(['System Administrator', 'ICT Officer']))
-        <li class="menu-item {{ request()->routeIs('admin.settings.system-health*') ? 'active' : '' }}">
-            <a href="{{ route('admin.settings.system-health') }}" class="menu-link">
-                <i class="ri-heart-pulse-line me-2"></i>
-                <div data-i18n="System Health">System Health</div>
-            </a>
-        </li>
-        <li class="menu-item {{ request()->routeIs('admin.settings.system-logs*') ? 'active' : '' }}">
-            <a href="{{ route('admin.settings.system-logs') }}" class="menu-link">
-                <i class="ri-file-list-3-line me-2"></i>
-                <div data-i18n="System Logs">System Logs</div>
-            </a>
-        </li>
-        @endif
     </ul>
 </li>
 @endif
@@ -668,6 +623,16 @@
         <li class="menu-item {{ request()->routeIs('admin.settings.backups*') ? 'active' : '' }}">
             <a href="{{ route('admin.settings.backups') }}" class="menu-link">
                 <div data-i18n="Backup Manager">Backup Manager</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.settings.system-health') ? 'active' : '' }}">
+            <a href="{{ route('admin.settings.system-health') }}" class="menu-link">
+                <div data-i18n="System Health">System Health</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.settings.system-logs*') ? 'active' : '' }}">
+            <a href="{{ route('admin.settings.system-logs') }}" class="menu-link">
+                <div data-i18n="System Logs">System Logs</div>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.settings.audit-trails*') ? 'active' : '' }}">

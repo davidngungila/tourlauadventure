@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Login - {{ config('app.name', 'TourPilot') }}</title>
+    <title>Login - {{ config('app.name', 'Tour Admin') }}</title>
     <meta name="description" content="" />
     
     <!-- Favicon -->
@@ -54,7 +54,7 @@
                 <span class="app-brand-logo demo">
                   <img src="{{ asset('lau-adventuress.png') }}" alt="Lau Paradise Adventures" style="height: 48px; width: auto;" />
                 </span>
-                <span class="app-brand-text demo text-heading fw-semibold">{{ config('app.name', 'TourPilot') }}</span>
+                <span class="app-brand-text demo text-heading fw-semibold">{{ config('app.name', 'Tour Admin') }}</span>
               </a>
             </div>
             <!-- /Logo -->

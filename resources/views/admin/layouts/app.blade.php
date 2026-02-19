@@ -11,7 +11,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') - {{ config('app.name', 'TourPilot') }}</title>
+    <title>@yield('title', 'Dashboard') - {{ config('app.name', 'Tour Admin') }}</title>
     <meta name="description" content="@yield('description', 'Tour Management System')" />
     
     <!-- Favicon -->
@@ -168,7 +168,7 @@
 
                 </span>
               </span>
-              <span class="app-brand-text demo menu-text fw-semibold ms-2">{{ config('app.name', 'TourPilot') }}</span>
+              <span class="app-brand-text demo menu-text fw-semibold ms-2">{{ config('app.name', 'Tour Admin') }}</span>
             </a>
             <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
               <i class="menu-toggle-icon d-xl-block align-middle"></i>
@@ -205,10 +205,7 @@
                   <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
                       @if(auth()->user()->avatar)
-                        <img src="{{ auth()->user()->avatar_url }}" alt class="w-px-40 h-auto rounded-circle" style="width: 40px; height: 40px; object-fit: cover; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                        <div class="avatar-initials avatar-initials-nav rounded-circle" title="{{ auth()->user()->name }}" style="display: none;">
-                          {{ auth()->user()->initials }}
-                        </div>
+                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt class="w-px-40 h-auto rounded-circle" />
                       @else
                         <div class="avatar-initials avatar-initials-nav rounded-circle" title="{{ auth()->user()->name }}">
                           {{ auth()->user()->initials }}
@@ -222,10 +219,7 @@
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0 me-2">
                             @if(auth()->user()->avatar)
-                              <img src="{{ auth()->user()->avatar_url }}" alt class="w-px-40 h-auto rounded-circle" style="width: 40px; height: 40px; object-fit: cover; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                              <div class="avatar-initials avatar-initials-dropdown rounded-circle" style="display: none;">
-                                {{ auth()->user()->initials }}
-                              </div>
+                              <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt class="w-px-40 h-auto rounded-circle" />
                             @else
                               <div class="avatar-initials avatar-initials-dropdown rounded-circle">
                                 {{ auth()->user()->initials }}

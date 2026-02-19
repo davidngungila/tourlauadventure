@@ -1024,19 +1024,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/cloudinary/create-folder', [\App\Http\Controllers\Admin\CloudinaryController::class, 'createFolder'])->name('cloudinary.create-folder');
         Route::post('/cloudinary/import-to-gallery', [\App\Http\Controllers\Admin\CloudinaryController::class, 'importToGallery'])->name('cloudinary.import-to-gallery');
         
-        // Cloudinary Accounts Management
-        Route::resource('cloudinary-accounts', \App\Http\Controllers\Admin\CloudinaryAccountController::class)->names([
-            'index' => 'cloudinary-accounts.index',
-            'create' => 'cloudinary-accounts.create',
-            'store' => 'cloudinary-accounts.store',
-            'show' => 'cloudinary-accounts.show',
-            'edit' => 'cloudinary-accounts.edit',
-            'update' => 'cloudinary-accounts.update',
-            'destroy' => 'cloudinary-accounts.destroy',
-        ]);
-        Route::post('/cloudinary-accounts/{id}/test-connection', [\App\Http\Controllers\Admin\CloudinaryAccountController::class, 'testConnection'])->name('cloudinary-accounts.test-connection');
-        Route::post('/cloudinary-accounts/{id}/set-default', [\App\Http\Controllers\Admin\CloudinaryAccountController::class, 'setDefault'])->name('cloudinary-accounts.set-default');
-        
         // Testimonials
         Route::get('/homepage/testimonials', [AdminHomepageController::class, 'testimonials'])->name('homepage.testimonials');
         Route::get('/homepage/testimonials/create', [AdminHomepageController::class, 'createTestimonial'])->name('homepage.testimonials.create');
@@ -1096,11 +1083,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/users/{id}', [AdminUserManagementController::class, 'show'])->name('users.show');
         Route::put('/users/{id}', [AdminUserManagementController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [AdminUserManagementController::class, 'destroy'])->name('users.destroy');
-    });
-    
-    // Website Issues Dashboard - Unified view of all issues
-    Route::middleware(['role:System Administrator|Travel Consultant|Reservations Officer|ICT Officer'])->group(function () {
-        Route::get('/issues', [\App\Http\Controllers\Admin\WebsiteIssuesController::class, 'index'])->name('issues.index');
     });
     
     // Customer Queries - System Administrator, Travel Consultant, Reservations Officer

@@ -528,7 +528,7 @@ class HomepageController extends BaseAdminController
      */
     public function gallery(Request $request)
     {
-        $viewType = $request->get('view', 'all'); // 'database', 'filesystem', 'cloudinary', or 'all'
+        $viewType = $request->get('view', 'all'); // 'database', 'filesystem', or 'all'
         
         // Get database images
         $dbImages = collect();
@@ -671,11 +671,7 @@ class HomepageController extends BaseAdminController
         $totalDbImages = Gallery::count();
         $totalFsImages = count($this->getFilesystemImages('images'));
         
-        // Check if Cloudinary is configured
-        $cloudinaryAccounts = \App\Models\CloudinaryAccount::getActive();
-        $cloudinaryConfigured = $cloudinaryAccounts->count() > 0 || !empty(env('CLOUDINARY_URL')) || (!empty(env('CLOUDINARY_CLOUD_NAME')) && !empty(env('CLOUDINARY_API_KEY')));
-        
-        return view('admin.homepage.gallery', compact('images', 'categories', 'albums', 'priorities', 'viewType', 'totalDbImages', 'totalFsImages', 'cloudinaryConfigured', 'cloudinaryAccounts'));
+        return view('admin.homepage.gallery', compact('images', 'categories', 'albums', 'priorities', 'viewType', 'totalDbImages', 'totalFsImages'));
     }
 
     /**

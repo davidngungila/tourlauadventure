@@ -32,7 +32,7 @@ class SystemSettingsController extends BaseAdminController
 
         // Get current config values as fallback
         $configValues = [
-            'app_name' => config('app.name', 'TourPilot'),
+            'app_name' => config('app.name', 'Lau Paradise Adventures'),
             'app_url' => config('app.url', url('/')),
             'app_timezone' => config('app.timezone', 'Africa/Dar_es_Salaam'),
             'app_locale' => config('app.locale', 'en'),
