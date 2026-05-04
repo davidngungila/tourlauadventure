@@ -1082,6 +1082,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/users', [AdminUserManagementController::class, 'store'])->name('users.store');
         Route::get('/users/{id}', [AdminUserManagementController::class, 'show'])->name('users.show');
         Route::put('/users/{id}', [AdminUserManagementController::class, 'update'])->name('users.update');
+        Route::post('/users/{id}/reset-password', [AdminUserManagementController::class, 'resetPassword'])->name('users.reset-password');
         Route::delete('/users/{id}', [AdminUserManagementController::class, 'destroy'])->name('users.destroy');
     });
     

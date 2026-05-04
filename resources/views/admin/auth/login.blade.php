@@ -51,10 +51,7 @@
             <!-- Logo -->
             <div class="app-brand justify-content-center mt-5">
               <a href="{{ route('home') }}" class="app-brand-link gap-3">
-                <span class="app-brand-logo demo">
-                  <img src="{{ asset('lau-adventuress.png') }}" alt="Lau Paradise Adventures" style="height: 48px; width: auto;" />
-                </span>
-                <span class="app-brand-text demo text-heading fw-semibold">{{ config('app.name', 'Tour Admin') }}</span>
+                <span class="app-brand-text demo text-heading fw-semibold">MySafari</span>
               </a>
             </div>
             <!-- /Logo -->

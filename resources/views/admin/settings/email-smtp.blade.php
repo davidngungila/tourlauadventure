@@ -1384,8 +1384,26 @@ function updateMailerSettings() {
 }
 
 // Refresh Email Logs
-function refreshEmailLogs() {
-    alert('Email logs feature coming soon!');
+async function refreshEmailLogs() {
+    try {
+        const response = await fetch('{{ route('admin.settings.email-smtp') }}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html',
+            }
+        });
+        
+        if (response.ok) {
+            // Reload the page to show updated logs
+            location.reload();
+        } else {
+            alert('Failed to refresh email logs');
+        }
+    } catch (error) {
+        console.error('Error refreshing email logs:', error);
+        alert('Error refreshing email logs');
+    }
 }
 </script>
 @endpush

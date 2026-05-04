@@ -20,7 +20,7 @@ class EmailSmtpController extends BaseAdminController
      */
     public function index()
     {
-        // Get settings from database
+        // Get settings from database first (primary source)
         $settings = [];
         if (Schema::hasTable('system_settings')) {
             $emailSettings = SystemSetting::where('group', 'email_smtp')->get()->keyBy('key');
@@ -29,16 +29,16 @@ class EmailSmtpController extends BaseAdminController
             }
         }
         
-        // Merge with config defaults
-        $settings = array_merge([
+        // Define default settings
+        $defaultSettings = [
             'mailer' => config('mail.default', 'smtp'),
-            'host' => config('mail.mailers.smtp.host', ''),
+            'host' => config('mail.mailers.smtp.host', 'smtp.gmail.com'),
             'port' => config('mail.mailers.smtp.port', 587),
-            'username' => config('mail.mailers.smtp.username', ''),
-            'password' => config('mail.mailers.smtp.password', ''),
+            'username' => config('mail.mailers.smtp.username', 'davidngungila@gmail.com'),
+            'password' => config('mail.mailers.smtp.password', 'mttk vivw ryjr pgwf'),
             'encryption' => config('mail.mailers.smtp.encryption', 'tls'),
-            'from_address' => config('mail.from.address', ''),
-            'from_name' => config('mail.from.name', ''),
+            'from_address' => config('mail.from.address', 'davidngungila@gmail.com'),
+            'from_name' => config('mail.from.name', 'Lau Paradise Adventures'),
             'timeout' => config('mail.mailers.smtp.timeout', 30),
             'auth_mode' => config('mail.mailers.smtp.auth_mode', 'login'),
             'verify_peer' => config('mail.mailers.smtp.verify_peer', true),
@@ -47,7 +47,15 @@ class EmailSmtpController extends BaseAdminController
             'queue_connection' => config('mail.queue_connection', 'database'),
             'rate_limit' => config('mail.rate_limit', 100),
             'rate_limit_period' => config('mail.rate_limit_period', 60),
-        ], $settings);
+        ];
+        
+        // Use database settings if available, otherwise use defaults
+        if (empty($settings)) {
+            $settings = $defaultSettings;
+        } else {
+            // Merge database settings with defaults (database takes priority)
+            $settings = array_merge($defaultSettings, $settings);
+        }
 
         // Email logs (last 50) if table exists
         $emailLogs = collect();
@@ -211,7 +219,7 @@ class EmailSmtpController extends BaseAdminController
     public function testConnection(Request $request)
     {
         try {
-            // Get settings
+            // Get settings from database first (primary source)
             $settings = [];
             if (Schema::hasTable('system_settings')) {
                 $emailSettings = SystemSetting::where('group', 'email_smtp')->get()->keyBy('key');
@@ -220,7 +228,7 @@ class EmailSmtpController extends BaseAdminController
                 }
             }
 
-            // Override with request values if provided
+            // Override with request values if provided (for testing)
             $host = $request->input('host') ?? $settings['host'] ?? config('mail.mailers.smtp.host');
             $port = $request->input('port') ?? $settings['port'] ?? config('mail.mailers.smtp.port', 587);
             $username = $request->input('username') ?? $settings['username'] ?? config('mail.mailers.smtp.username');
@@ -246,6 +254,24 @@ class EmailSmtpController extends BaseAdminController
             
             fclose($connection);
 
+            // Update database with test results
+            SystemSetting::updateOrCreate(
+                ['key' => 'last_connection_test', 'group' => 'email_smtp'],
+                [
+                    'value' => json_encode([
+                        'host' => $host,
+                        'port' => $port,
+                        'username' => $username,
+                        'encryption' => $encryption,
+                        'status' => 'success',
+                        'tested_at' => now()->toDateTimeString(),
+                        'error_message' => null
+                    ]),
+                    'type' => 'json',
+                    'description' => 'Last SMTP connection test result'
+                ]
+            );
+
             return response()->json([
                 'success' => true,
                 'message' => 'SMTP connection successful!',
@@ -255,11 +281,24 @@ class EmailSmtpController extends BaseAdminController
                     'encryption' => $encryption,
                 ],
             ]);
-
         } catch (\Exception $e) {
             Log::error('Email connection test failed', [
                 'error' => $e->getMessage(),
             ]);
+
+            // Update database with test results
+            SystemSetting::updateOrCreate(
+                ['key' => 'last_connection_test', 'group' => 'email_smtp'],
+                [
+                    'value' => json_encode([
+                        'status' => 'failed',
+                        'tested_at' => now()->toDateTimeString(),
+                        'error_message' => $e->getMessage()
+                    ]),
+                    'type' => 'json',
+                    'description' => 'Last SMTP connection test result'
+                ]
+            );
 
             return response()->json([
                 'success' => false,
@@ -280,7 +319,7 @@ class EmailSmtpController extends BaseAdminController
                 'message' => 'nullable|string',
             ]);
 
-            // Temporarily update mail config with current settings
+            // Update mail config from database (primary source)
             $this->updateMailConfigFromDatabase();
             
             // CRITICAL: Ensure default mailer is smtp, not log
@@ -300,6 +339,9 @@ class EmailSmtpController extends BaseAdminController
             Log::info('Test email sent', [
                 'to' => $testEmail,
                 'sent_by' => auth()->id(),
+                'mailer' => config('mail.default'),
+                'host' => config('mail.mailers.smtp.host'),
+                'port' => config('mail.mailers.smtp.port'),
             ]);
 
             // Persist to email_logs table
@@ -310,28 +352,54 @@ class EmailSmtpController extends BaseAdminController
                     'body' => $message,
                     'status' => 'sent',
                     'error_message' => null,
-                    'meta' => [
+                    'meta' => json_encode([
                         'type' => 'smtp_test',
                         'sent_by' => auth()->id(),
                         'mailer' => config('mail.default'),
-                    ],
+                        'host' => config('mail.mailers.smtp.host'),
+                        'port' => config('mail.mailers.smtp.port'),
+                        'test_time' => now()->toDateTimeString()
+                    ]),
                     'sent_at' => now(),
+                    'created_at' => now()
                 ]);
             }
+
+            // Update database with test success
+            SystemSetting::updateOrCreate(
+                ['key' => 'last_email_test', 'group' => 'email_smtp'],
+                [
+                    'value' => json_encode([
+                        'status' => 'success',
+                        'test_email' => $testEmail,
+                        'subject' => $subject,
+                        'sent_at' => now()->toDateTimeString(),
+                        'error_message' => null
+                    ]),
+                    'type' => 'json',
+                    'description' => 'Last email test result'
+                ]
+            );
 
             if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Test email sent successfully to ' . $testEmail,
+                    'test_time' => now()->toDateTimeString(),
+                    'mailer' => config('mail.default'),
+                    'host' => config('mail.mailers.smtp.host'),
+                    'port' => config('mail.mailers.smtp.port'),
                 ]);
             }
 
-            return back()->with('success', 'Test email sent successfully!');
+            return back()->with('success', 'Test email sent successfully to ' . $testEmail . '!');
 
         } catch (\Exception $e) {
             Log::error('Test email failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+                'test_email' => $request->input('test_email'),
+                'subject' => $request->input('subject'),
             ]);
 
             // Persist failure to email_logs
@@ -342,19 +410,43 @@ class EmailSmtpController extends BaseAdminController
                     'body' => $request->input('message') ?? null,
                     'status' => 'failed',
                     'error_message' => $e->getMessage(),
-                    'meta' => [
+                    'meta' => json_encode([
                         'type' => 'smtp_test',
                         'sent_by' => auth()->id(),
                         'mailer' => config('mail.default'),
-                    ],
+                        'test_time' => now()->toDateTimeString(),
+                        'error_trace' => $e->getTraceAsString()
+                    ]),
                     'sent_at' => now(),
+                    'created_at' => now()
                 ]);
             }
+
+            // Update database with test failure
+            SystemSetting::updateOrCreate(
+                ['key' => 'last_email_test', 'group' => 'email_smtp'],
+                [
+                    'value' => json_encode([
+                        'status' => 'failed',
+                        'test_email' => $request->input('test_email'),
+                        'subject' => $request->input('subject'),
+                        'sent_at' => now()->toDateTimeString(),
+                        'error_message' => $e->getMessage()
+                    ]),
+                    'type' => 'json',
+                    'description' => 'Last email test result'
+                ]
+            );
 
             if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Email test failed: ' . $e->getMessage(),
+                    'error_details' => [
+                        'exception' => $e->getMessage(),
+                        'test_email' => $request->input('test_email'),
+                        'mailer' => config('mail.default')
+                    ]
                 ], 500);
             }
 

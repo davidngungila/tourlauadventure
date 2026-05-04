@@ -260,6 +260,60 @@ class UserManagementController extends BaseAdminController
     }
 
     /**
+     * Reset user password
+     */
+    public function resetPassword(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        
+        // Security: Prevent non-admin users from resetting passwords
+        if (!auth()->user()->hasRole(['System Administrator', 'ICT Officer'])) {
+            return $this->errorResponse('You do not have permission to reset passwords!', 403);
+        }
+        
+        // Security: Prevent users from resetting their own password (use change password feature)
+        if ($user->id === auth()->id()) {
+            return $this->errorResponse('Use the profile page to change your own password!', 403);
+        }
+        
+        // Validate request
+        $validated = $request->validate([
+            'password' => 'required|min:8|confirmed|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+        ], [
+            'password.required' => 'New password is required',
+            'password.min' => 'Password must be at least 8 characters long',
+            'password.confirmed' => 'Password confirmation does not match',
+            'password.regex' => 'Password must contain at least one lowercase letter, one uppercase letter, and one number',
+        ]);
+        
+        // Update password
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+        
+        // Log the password reset
+        \Log::info('User password reset by admin', [
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'reset_by' => auth()->id(),
+            'reset_by_email' => auth()->user()->email,
+            'reset_at' => now()->toDateTimeString(),
+            'ip_address' => $request->ip(),
+        ]);
+        
+        // Return JSON response for AJAX requests
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Password reset successfully!',
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+            ]);
+        }
+        
+        return $this->successResponse('Password reset successfully!', route('admin.users.edit', $user->id));
+    }
+
+    /**
      * Delete user
      */
     public function destroy($id)

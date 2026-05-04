@@ -278,6 +278,41 @@
 </div>
 @endsection
 
+<!-- Password Reset Modal -->
+<div class="modal fade" id="passwordResetModal" tabindex="-1" aria-labelledby="passwordResetModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="passwordResetModalLabel">
+                    <i class="ri-lock-password-line me-2"></i>Reset User Password
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="passwordResetForm">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="resetPassword" class="form-label">New Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="resetPassword" name="password" required minlength="8">
+                        <div class="form-text">Minimum 8 characters</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="resetPasswordConfirmation" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="resetPasswordConfirmation" name="password_confirmation" required minlength="8">
+                        <div class="form-text">Re-enter the new password</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitPasswordReset()">
+                    <i class="ri-lock-password-line me-1"></i>Reset Password
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script src="{{ asset('assets/assets/vendor/libs/@form-validation/popular.js') }}"></script>
 <script src="{{ asset('assets/assets/vendor/libs/@form-validation/bootstrap5.js') }}"></script>
@@ -291,10 +326,105 @@ $(document).ready(function() {
 });
 
 function resetPassword() {
-    const newPassword = prompt('Enter new password (min 8 characters):');
-    if (newPassword && newPassword.length >= 8) {
-        // Implement password reset via AJAX
-        alert('Password reset functionality to be implemented');
+    // Show password reset modal
+    const modal = new bootstrap.Modal(document.getElementById('passwordResetModal'));
+    modal.show();
+}
+
+function submitPasswordReset() {
+    const form = document.getElementById('passwordResetForm');
+    const formData = new FormData(form);
+    
+    // Validate passwords match
+    const password = formData.get('password');
+    const passwordConfirmation = formData.get('password_confirmation');
+    
+    if (password.length < 8) {
+        showErrorToast('Password must be at least 8 characters long');
+        return;
+    }
+    
+    if (password !== passwordConfirmation) {
+        showErrorToast('Passwords do not match');
+        return;
+    }
+    
+    // Submit via AJAX
+    fetch('{{ route("admin.users.reset-password", $user->id) }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessToast(data.message);
+            bootstrap.Modal.getInstance(document.getElementById('passwordResetModal')).hide();
+            // Clear form
+            form.reset();
+        } else {
+            showErrorToast(data.message || 'Password reset failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorToast('An error occurred while resetting password');
+    });
+}
+
+function showErrorToast(message) {
+    // Show error toast (implement or use existing toast system)
+    if (typeof showSuccessToast === 'function') {
+        // If toast system exists, use it
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-danger border-0';
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    } else {
+        alert(message);
+    }
+}
+
+function showSuccessToast(message) {
+    // Show success toast (implement or use existing toast system)
+    if (typeof showSuccessToast === 'function' && showSuccessToast.toString().includes('showSuccessToast')) {
+        showSuccessToast(message);
+    } else {
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-success border-0';
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
     }
 }
 
